@@ -6,22 +6,32 @@ use std::arch::x86_64::_rdrand32_step;
 use crate::synth_core::*;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::StreamError;
-use crate::*;
+use crate::module::*;
+use crate::port::*;
 
 use ringbuf::{HeapConsumer, HeapProducer, HeapRb};
-//use ringbuf::HeapRb;
+
+struct CpalStuff{
+    stream: cpal::Stream,
+    host: cpal::Host,
+    device: cpal::Device,
+    config: cpal::StreamConfig,
+    producer_for_core: HeapProducer<f32>,
+    consumer_from_core: HeapConsumer<f32>,
+}
 
 pub struct ModuleO {
     ins: Vec<AudioPort>,
     outs: Vec<AudioPort>,
-    host: cpal::Host,
-    device: cpal::Device,
-    config: cpal::StreamConfig,
-    producer: HeapProducer<f32>,
-    stream: cpal::Stream,
+    framerate: i64,
+    process_fn: Option(fn(i64)),
+    cpal_instance: Option<Box<CpalStuff>>
 }
 
 impl Module for ModuleO {
+    fn set_framerate(&mut self, framerate: i64) {
+        self.framerate = framerate;
+    }
     fn process(&mut self) {
         unsafe {
             static mut count_i: isize = 0;
@@ -33,8 +43,21 @@ impl Module for ModuleO {
     fn inputs(&mut self) -> &mut Vec<AudioPort> {
         &mut self.ins
     }
+
     fn outputs(&mut self) -> &mut Vec<AudioPort> {
         &mut self.outs
+    }
+
+    fn recommended_framerate(&mut self) -> Option<i64> {
+        return Some(self.config.sample_rate as i64);
+    }
+
+    fn can_be_default_module() -> bool {
+        return true;
+    }
+
+    fn set_pocess_fn(&mut self, process_fn: Option(fn(i64))) {
+        self.process_fn = process_fn;
     }
 }
 
@@ -42,6 +65,34 @@ impl ModuleO {
 
     fn error_fn(err: StreamError) {
         eprintln!("an error occurred on stream: {}", err);
+    }
+
+    fn reinit(&mut self){
+        let host = cpal::default_host();
+        let device = host.default_output_device().unwrap();
+        let buffer = HeapRb::new(12345);
+        let (mut producer, mut consumer) = self.buffer.split();
+        let config = device.default_output_config().unwrap().into();
+        println!("Default output config: {:?}", &config);
+        let stream = device
+            .build_output_stream(
+                &config,
+                move |data: &mut [f32], output_device: &cpal::OutputCallbackInfo| {
+                    Self::data_fn(&mut consumer, data, output_device)
+                },
+                &Self::error_fn,
+                None
+            )
+            .unwrap();
+        stream.play().unwrap();
+        self.cpal_instance = Some(Box::new(CpalStuff{
+            stream:stream,
+            host: host,
+            device: device,
+            config: config,
+            producer_for_core: producer,
+            consumer_from_core: (),
+        }));
     }
 
     fn data_fn(
@@ -79,47 +130,15 @@ impl ModuleO {
             dbg!(count, count_samples, count_samples2);
         }
     }
-
-    fn qweqwe(&mut self) {
-        std::thread::sleep(std::time::Duration::from_millis(1000));
-    }
 }
 impl Default for ModuleO {
     fn default() -> Self {
-        let host = cpal::default_host();
-        let device = host.default_output_device().unwrap();
-        let buffer = HeapRb::new(12345);
-        let (mut producer, mut consumer) = buffer.split();
-
-        let config = device.default_output_config().unwrap().into();
-        println!("Default output config: {:?}", &config);
-        let stream = device
-            .build_output_stream(
-                &config,
-                move |data: &mut [f32], output_device: &cpal::OutputCallbackInfo| {
-                    Self::data_fn(&mut consumer, data, output_device)
-                },
-                &Self::error_fn,
-                None
-            )
-            .unwrap();
-        stream.play().unwrap();
-
         ModuleO {
-            ins: AudioPort::create_audio_ports(1),
-            outs: vec![],
-            host: host,
-            device: device,
-            config: config,
-            producer: producer,
-            stream: stream,
+            ins: AudioPort::create_audio_ports(8),
+            outs: AudioPort::create_audio_ports(8),
+            framerate: 0,
+            process_fn: None,
+            cpal_instance: Option::None,
         }
-    }
-}
-
-impl Drop for ModuleO {
-    fn drop(&mut self) {
-        println!("Dropping HasDrop!");
-        //self.stream.pause()
     }
 }

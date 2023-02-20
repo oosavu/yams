@@ -1,50 +1,19 @@
 pub use std::sync::atomic::{AtomicBool, Ordering};
-//todo
 pub use std::sync::{Arc, Condvar, Mutex};
 pub use std::{thread, time};
 use std::borrow::{Borrow, BorrowMut};
 use std::ops::Add;
 pub use std::ptr::NonNull;
 use std::time::{Duration, SystemTime};
-use crate::*;
-use crate::module::{Module, ModulePointer};
+use crate::module::*;
+use crate::cable::*;
 
-const FALLBACK_FRAME_SIZE: usize = 64; //need to have nullable dynamic pointer
-pub(crate) struct Cable {
-    pub input_module_p: ModulePointer,
-    pub output_module_p: ModulePointer,
-    pub input_port: usize,
-    pub output_port: usize,
-}
+const FALLBACK_FRAME_SIZE: usize = 64;
 
-pub(crate) trait DefaultModuleInterface {}
-
-type DefaultModulePointer = Option<NonNull<dyn DefaultModuleInterface>>;
-
-
-pub(crate) trait DefaultModule {
-    fn defult_module_interface() -> DefaultModulePointer;
-}
-
-//Specialized for audio only for executing worker thread in it
-macro_rules! is_default_module {
-    ($($t:ty),+ $(,)?) => ($(
-        impl DefaultModule for $t {
-            fn jobs(&self) -> Box<De> {
-                &self.defa
-            }
-
-            fn jobs_mut(&mut self) -> &mut Vec<String> {
-                &mut self.jobs
-            }
-        }
-    )+)
-}
 
 struct RealTimeCore {
     pub modules_pointers: Vec<ModulePointer>,
-    //todo arc?
-    pub default_module: DefaultModulePointer,
+    pub default_module: ModulePointer,
     pub cable_core: Vec<Cable>,
     pub sample_rate: i64,
     pub current_time: SystemTime,
@@ -53,7 +22,6 @@ struct RealTimeCore {
 }
 
 unsafe impl Send for RealTimeCore {}
-
 unsafe impl Sync for RealTimeCore {}
 
 impl RealTimeCore {
@@ -75,8 +43,8 @@ impl RealTimeCore {
 }
 
 pub struct Engine {
-    modules: Vec<Arc<Mutex<dyn Module>>>,
-    cables: Vec<Mutex<Cable>>,
+    modules: Vec<ModuleArc>,
+    //cables: Vec<Mutex<Cable>>,
     core: Arc<Mutex<RealTimeCore>>,
 
     fallback_mutex: Arc<(Mutex<bool>, Condvar)>,
@@ -96,12 +64,18 @@ impl Engine {
         self.stop_fallback();
     }
 
-    //
-    // pub fn add_module(&mut self, module: Arc<Mutex<dyn Module>>){
-    //     self.modules.push(module);
-    //     let cor = self.core.lock().unwrap();
-    //    // cor.modules_pointers.append()
-    // }
+
+    pub fn add_module(&mut self, module: &mut ModuleArc){
+        self.modules.push(module.clone());
+        let cor = self.core.lock().unwrap();
+        cor.modules_pointers.push(extract_pointer(module));
+    }
+
+    pub fn add_cable(&mut self,  cable: Cable){
+        //self.cables.push(cable);
+        let cor = self.core.lock().unwrap();
+        cor.cable_core.push(cable);
+    }
 
     fn start_fallback(&mut self) {
         dbg!("starting fallback...");
@@ -141,21 +115,12 @@ impl Engine {
         let cor = self.core.lock().unwrap();
         dbg!("fallback stopped. working time: {}", cor.current_time.elapsed());
     }
-
-    fn pause_fallback(&mut self) {
-        self.fallback_alive.store(false, Ordering::SeqCst);
-        self.fallback_handle
-            .take().expect("Called stop on non-running thread")
-            .join().expect("Could not join spawned thread");
-        //let cor = self.core.lock().unwrap();
-    }
 }
 
 impl Default for Engine{
     fn default() -> Self {
         Engine{
             modules: vec![],
-            cables: vec![],
             core: Arc::new(Mutex::new(RealTimeCore {
                 modules_pointers: vec![],
                 default_module: None,
@@ -172,37 +137,37 @@ impl Default for Engine{
         }
     }
 }
-
-pub fn test_engine() -> Engine {
-    let mut mods: Vec<Arc<Mutex<dyn Module>>> = vec![Arc::new(Mutex::new(sine::ModuleSine::default())),
-                                                     Arc::new(Mutex::new(audio_o::ModuleO::default()))];
-    let alive: Arc<AtomicBool> = Arc::new(AtomicBool::default());
-    let fallback_active: Arc<(Mutex<bool>, Condvar)> = Arc::new((Mutex::new(true), Condvar::new()));
-    Engine {
-        fallback_handle: None,
-        fallback_alive: alive.clone(),
-        core: Arc::new(Mutex::new(RealTimeCore {
-            modules_pointers: vec![crate::module::extract_pointer_from_vec(&mut mods, 0), crate::module::extract_pointer_from_vec(&mut mods, 1)],
-            default_module: None,
-            cable_core: vec![Cable {
-                input_module_p: crate::module::extract_pointer_from_vec(&mut mods, 0),
-                output_module_p: crate::module::extract_pointer_from_vec(&mut mods, 1),
-                input_port: 0,
-                output_port: 0,
-            }],
-            sample_rate: 96000,
-            current_time: SystemTime::now(),
-            alive: alive.clone(),
-            is_fallback_active: fallback_active.clone(),
-        })),
-        fallback_mutex: fallback_active.clone(),
-        cables: vec![Mutex::new(Cable {
-            input_module_p: crate::module::extract_pointer_from_vec(&mut mods, 0),
-            output_module_p: crate::module::extract_pointer_from_vec(&mut mods, 1),
-            input_port: 0,
-            output_port: 0,
-        })],
-        modules: mods,
-        frame_rate: 48000,
-    }
-}
+//
+// pub fn test_engine() -> Engine {
+//     let mut mods: Vec<Arc<Mutex<dyn Module>>> = vec![Arc::new(Mutex::new(sine::ModuleSine::default())),
+//                                                      Arc::new(Mutex::new(audio_o::ModuleO::default()))];
+//     let alive: Arc<AtomicBool> = Arc::new(AtomicBool::default());
+//     let fallback_active: Arc<(Mutex<bool>, Condvar)> = Arc::new((Mutex::new(true), Condvar::new()));
+//     Engine {
+//         fallback_handle: None,
+//         fallback_alive: alive.clone(),
+//         core: Arc::new(Mutex::new(RealTimeCore {
+//             modules_pointers: vec![crate::module::extract_pointer_from_vec(&mut mods, 0), crate::module::extract_pointer_from_vec(&mut mods, 1)],
+//             default_module: None,
+//             cable_core: vec![Cable {
+//                 input_module_p: crate::module::extract_pointer_from_vec(&mut mods, 0),
+//                 output_module_p: crate::module::extract_pointer_from_vec(&mut mods, 1),
+//                 input_port: 0,
+//                 output_port: 0,
+//             }],
+//             sample_rate: 96000,
+//             current_time: SystemTime::now(),
+//             alive: alive.clone(),
+//             is_fallback_active: fallback_active.clone(),
+//         })),
+//         fallback_mutex: fallback_active.clone(),
+//         cables: vec![Mutex::new(Cable {
+//             input_module_p: crate::module::extract_pointer_from_vec(&mut mods, 0),
+//             output_module_p: crate::module::extract_pointer_from_vec(&mut mods, 1),
+//             input_port: 0,
+//             output_port: 0,
+//         })],
+//         modules: mods,
+//         frame_rate: 48000,
+//     }
+// }

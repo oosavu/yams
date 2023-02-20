@@ -1,5 +1,5 @@
 [workspace]
 members = [
-    "biser",
-    "gui"
+    "yams_core",
+    "yams_main"
 ]

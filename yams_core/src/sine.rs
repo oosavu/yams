@@ -1,17 +1,23 @@
 use crate::synth_core::*;
-use crate::*;
+use crate::module::*;
+use crate::port::*;
+
 pub struct ModuleSine {
     ins: Vec<AudioPort>,
     outs: Vec<AudioPort>,
     sample_clock: f32,
+    framerate: i64,
 }
 
 impl Module for ModuleSine {
+    fn set_framerate(&mut self, framerate: i64) {
+        self.framerate = framerate;
+    }
+
     fn process(&mut self) {
-        let sample_rate = 48000.0f32;
         self.sample_clock = (self.sample_clock + 1.0);
 
-        self.outs[0].value[0] = (self.sample_clock * 440.0 * 2.0 * std::f32::consts::PI / sample_rate).sin();
+        self.outs[0].value[0] = (self.sample_clock * 440.0 * 2.0 * std::f32::consts::PI / self.framerate).sin();
         //println!("outso:{}", self.outs[0].value)
     }
     fn inputs(&mut self) -> &mut Vec<AudioPort> {
@@ -20,6 +26,16 @@ impl Module for ModuleSine {
     fn outputs(&mut self) -> &mut Vec<AudioPort> {
         &mut self.outs
     }
+
+    fn recommended_framerate(&mut self) -> Option<i64> {
+        return None;
+    }
+
+    fn can_be_default_module() -> bool {
+        false
+    }
+
+    fn set_pocess_fn(&mut self, process_fn: Option(fn(int))) {}
 }
 
 impl Default for ModuleSine {
@@ -27,7 +43,8 @@ impl Default for ModuleSine {
         ModuleSine{
             ins: vec![],
             outs: AudioPort::create_audio_ports(1),
-            sample_clock: 0.0
+            sample_clock: 0.0,
+            framerate: 0,
         }
     }
 }
