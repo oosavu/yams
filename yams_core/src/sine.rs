@@ -17,7 +17,7 @@ impl Module for ModuleSine {
     fn process(&mut self) {
         self.sample_clock = (self.sample_clock + 1.0);
 
-        self.outs[0].value[0] = (self.sample_clock * 440.0 * 2.0 * std::f32::consts::PI / self.framerate).sin();
+        self.outs[0].value[0] = (self.sample_clock * 440.0 * 2.0 * std::f32::consts::PI / self.framerate as f32).sin();
         //println!("outso:{}", self.outs[0].value)
     }
     fn inputs(&mut self) -> &mut Vec<AudioPort> {
@@ -27,15 +27,15 @@ impl Module for ModuleSine {
         &mut self.outs
     }
 
-    fn recommended_framerate(&mut self) -> Option<i64> {
+    fn recommended_framerate(&mut self) -> Option<cpal::SampleRate> {
         return None;
     }
 
-    fn can_be_default_module() -> bool {
+    fn can_be_default_module(&self) -> bool {
         false
     }
 
-    fn set_pocess_fn(&mut self, process_fn: Option(fn(int))) {}
+    fn set_process_fn(&mut self, process_fn: Box<dyn Fn()>) {}
 }
 
 impl Default for ModuleSine {

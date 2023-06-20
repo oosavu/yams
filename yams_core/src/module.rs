@@ -2,7 +2,6 @@ use std::sync::{Arc, Mutex};
 use std::ptr::NonNull;
 use std::borrow::BorrowMut;
 use crate::AudioPort;
-use crate::Cable;
 
 pub type ModuleArc = Arc<Mutex<dyn Module>>;
 pub type ModulePointer = Option<NonNull<dyn Module>>;
@@ -15,9 +14,9 @@ pub trait Module {
     fn inputs(&mut self) -> &mut Vec<AudioPort>;
     fn outputs(&mut self) -> &mut Vec<AudioPort>;
 
-    fn recommended_framerate(&mut self) -> Option<i64>;
-    fn can_be_default_module() -> bool;
-    fn set_pocess_fn(&mut self, process_fn: Option(fn(int)));
+    fn recommended_framerate(&mut self) -> Option<cpal::SampleRate>;
+    fn can_be_default_module(&self) -> bool;
+    fn set_process_fn(&mut self, process_fn: Box<dyn Fn()>);
 }
 
 // extract unsafe fat pointer

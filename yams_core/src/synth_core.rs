@@ -1,8 +1,6 @@
 pub use std::sync::atomic::{AtomicBool, Ordering};
 pub use std::sync::{Arc, Condvar, Mutex};
 pub use std::{thread, time};
-use std::borrow::{Borrow, BorrowMut};
-use std::ops::Add;
 pub use std::ptr::NonNull;
 use std::time::{Duration, SystemTime};
 use crate::module::*;
@@ -67,13 +65,13 @@ impl Engine {
 
     pub fn add_module(&mut self, module: &mut ModuleArc){
         self.modules.push(module.clone());
-        let cor = self.core.lock().unwrap();
+        let mut cor = self.core.lock().unwrap();
         cor.modules_pointers.push(extract_pointer(module));
     }
 
     pub fn add_cable(&mut self,  cable: Cable){
         //self.cables.push(cable);
-        let cor = self.core.lock().unwrap();
+        let mut cor = self.core.lock().unwrap();
         cor.cable_core.push(cable);
     }
 
