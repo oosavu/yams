@@ -13,7 +13,6 @@ use std::{thread, time::Duration};
 fn main() {
     //biser::soundtest();
     let mut e = yams_core::Engine::default();
-    e.
     e.start();
 
     thread::sleep(Duration::from_millis(3000));

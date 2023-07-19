@@ -20,7 +20,7 @@ struct CpalStuff {
     output_config: cpal::StreamConfig,
 }
 
-type Callback = Arc<Mutex<Box<dyn  Fn() + Send + Sync>>>;
+type Callback = Arc<Mutex<Box<dyn Fn() + Send + Sync>>>;
 
 pub struct ModuleO {
     ins: Vec<AudioPort>,
@@ -92,43 +92,43 @@ impl ModuleO {
             ).unwrap();
 
         let input_device = host.default_input_device().unwrap();
-        let input_config = input_device.default_input_config().unwrap().into();
+        let input_config = input_device.default_input_config().unwrap();
         println!("Default input config: {:?}", &input_config);
 
-        let engine_fn = self.process_fn;
+        let engine_fn = &self.process_fn;
         let data_in = VecPointerWrapper(&self.ins as *const Vec<AudioPort>);
         let data_out = VecPointerWrapper(&self.outs as *const Vec<AudioPort>);
         //let arc_pointer_out = Arc::new(Mutex::new(&mut self.outs));
-        let input_stream = input_device
-            .build_input_stream(
-                &input_config,
-                move |data: &[f32], info: &cpal::InputCallbackInfo| {
-                    Self::input_fn(&mut producer,
-                                   data,
-                                   info,
-                                   input_config.channels,
-                                   output_config.channels,
-                                   data_in,
-                                   data_out,
-                                   engine_fn)
-                },
-                &Self::error_fn,
-                None,
-            ).unwrap();
+        // let input_stream = input_device
+        //     .build_input_stream(
+        //         &input_config,
+        //         move |data: &[f32], info: &cpal::InputCallbackInfo| {
+        //             Self::input_fn(&mut producer,
+        //                            data,
+        //                            info,
+        //                            input_config.channels,
+        //                            output_config.channels,
+        //                            data_in,
+        //                            data_out,
+        //                            engine_fn.unwrap())
+        //         },
+        //         &Self::error_fn,
+        //         None,
+        //     ).unwrap();
+        //
+        // output_stream.play().unwrap();
+        // input_stream.play().unwrap();
 
-        output_stream.play().unwrap();
-        input_stream.play().unwrap();
-
-
-        self.cpal_instance = Some(Box::new(CpalStuff {
-            input_stream,
-            output_stream,
-            host,
-            input_device,
-            output_device,
-            input_config,
-            output_config,
-        }));
+        //
+        // self.cpal_instance = Some(Box::new(CpalStuff {
+        //     input_stream,
+        //     output_stream,
+        //     host,
+        //     input_device,
+        //     output_device,
+        //     input_config,
+        //     output_config,
+        // }));
     }
 
     fn output_fn(
@@ -175,7 +175,7 @@ impl ModuleO {
         output_channels: cpal::ChannelCount,
         ins: VecPointerWrapper,
         outs: VecPointerWrapper,
-        process_fn:Callback,
+        process_fn: Callback,
     ) {
         unsafe {
             // let mut input_fell_behind = false;

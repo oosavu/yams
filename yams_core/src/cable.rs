@@ -1,6 +1,6 @@
 use crate::module::*;
 
-pub(crate) struct Cable {
+pub struct Cable {
     pub input_module_p: ModulePointer,
     pub output_module_p: ModulePointer,
     pub input_port: usize,
