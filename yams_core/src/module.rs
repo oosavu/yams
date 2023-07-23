@@ -20,9 +20,9 @@ pub trait Module {
 }
 
 // extract unsafe fat pointer
-pub fn extract_pointer(module: &mut ModuleArc) -> ModulePointer {
+pub fn extract_pointer(module: &ModuleArc) -> ModulePointer {
     return unsafe {
-        let asd: &Mutex<dyn Module> = module.borrow_mut();
+        let asd: &Mutex<dyn Module> = module;
         let qwe: *mut dyn Module = &mut *asd.lock().unwrap() as *mut dyn Module;
         Some(NonNull::new_unchecked(qwe))
     };

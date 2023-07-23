@@ -30,10 +30,9 @@ pub struct ModuleO {
     cpal_instance: Option<Box<CpalStuff>>,
 }
 
-#[derive(Copy, Clone)]
-struct VecPointerWrapper(*const Vec<AudioPort>);
-
-unsafe impl Send for VecPointerWrapper {}
+// #[derive(Copy, Clone)]
+// struct VecPointerWrapper(*const Vec<AudioPort>);
+// unsafe impl Send for VecPointerWrapper {}
 
 impl Module for ModuleO {
     fn set_framerate(&mut self, framerate: i64) {
@@ -92,13 +91,13 @@ impl ModuleO {
             ).unwrap();
 
         let input_device = host.default_input_device().unwrap();
-        let input_config = input_device.default_input_config().unwrap();
+        let input_config = input_device.default_input_config().unwrap().config();
         println!("Default input config: {:?}", &input_config);
 
         let engine_fn = &self.process_fn;
-        let data_in = VecPointerWrapper(&self.ins as *const Vec<AudioPort>);
-        let data_out = VecPointerWrapper(&self.outs as *const Vec<AudioPort>);
-        //let arc_pointer_out = Arc::new(Mutex::new(&mut self.outs));
+        // let data_in = VecPointerWrapper(&self.ins as *const Vec<AudioPort>);
+        // let data_out = VecPointerWrapper(&self.outs as *const Vec<AudioPort>);
+        // let arc_pointer_out = Arc::new(Mutex::new(&mut self.outs));
         // let input_stream = input_device
         //     .build_input_stream(
         //         &input_config,
@@ -108,8 +107,8 @@ impl ModuleO {
         //                            info,
         //                            input_config.channels,
         //                            output_config.channels,
-        //                            data_in,
-        //                            data_out,
+        //                            // data_in,
+        //                            // data_out,
         //                            engine_fn.unwrap())
         //         },
         //         &Self::error_fn,
@@ -118,7 +117,7 @@ impl ModuleO {
         //
         // output_stream.play().unwrap();
         // input_stream.play().unwrap();
-
+        //
         //
         // self.cpal_instance = Some(Box::new(CpalStuff {
         //     input_stream,
@@ -166,32 +165,33 @@ impl ModuleO {
             dbg!(COUNT, COUNT_SAMPLES, SILENTS_FRAMES);
         }
     }
-
-    fn input_fn(
-        producer: &mut HeapProducer<f32>,
-        data: &[f32],
-        calback_info: &cpal::InputCallbackInfo,
-        input_channels: cpal::ChannelCount,
-        output_channels: cpal::ChannelCount,
-        ins: VecPointerWrapper,
-        outs: VecPointerWrapper,
-        process_fn: Callback,
-    ) {
-        unsafe {
-            // let mut input_fell_behind = false;
-            // //COUNT_SAMPLES = COUNT_SAMPLES + data.len();
-            // let in_samples_count = data.len() / input_channels;
-            // for i in 0..in_samples_count {
-            //     for j in 0..input_channels {
-            //         *ins[j] = data[i * input_channels + j];
-            //     }
-            //     process_fn();
-            //     for j in 0..output_channels {
-            //         producer.push(*outs[j])?;
-            //     }
-            // }
-        }
-    }
+    //
+    // fn input_fn(
+    //     producer: &mut HeapProducer<f32>,
+    //     data: &[f32],
+    //     calback_info: &cpal::InputCallbackInfo,
+    //     input_channels: cpal::ChannelCount,
+    //     output_channels: cpal::ChannelCount,
+    //     // ins: VecPointerWrapper,
+    //     // outs: VecPointerWrapper,
+    //     process_fn: Callback,
+    // ) {
+    //     unsafe {
+    //         let fn_cor = process_fn.as_ref().lock().unwrap().as_ref();
+    //         let mut input_fell_behind = false;
+    //         //COUNT_SAMPLES = COUNT_SAMPLES + data.len();
+    //         let in_samples_count = data.len() / input_channels as usize;
+    //         for i in 0..in_samples_count {
+    //             // for j in 0..input_channels {
+    //             //     *ins[j] = data[i * input_channels + j];
+    //             // }
+    //             fn_cor();
+    //             // for j in 0..output_channels {
+    //             //     producer.push(*outs[j])?;
+    //             // }
+    //         }
+    //     }
+    // }
 }
 
 impl Default for ModuleO {

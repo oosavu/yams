@@ -11,4 +11,7 @@ pub use port::*;
 pub use module::*;
 pub use cable::*;
 
+pub use sine::ModuleSine;
+pub use audio_o::ModuleO;
+
 //pub use audio_o::soundtest;
