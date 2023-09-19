@@ -75,7 +75,6 @@ impl Engine {
         return self.modules.iter().find(|m|{m.lock().unwrap().audio_driver().is_some()})
     }
 
-
     pub fn add_module(&mut self, module: &mut ModuleArc){
         self.modules.push(module.clone());
         let mut cor = self.core.lock().unwrap();
@@ -91,12 +90,14 @@ impl Engine {
     fn start_fallback(&mut self) {
         dbg!("starting fallback...");
         self.fallback_alive.store(true, Ordering::SeqCst);
+        let mut alive = self.fallback_alive.clone();
         let cor = self.core.clone();
         self.fallback_handle = Some(thread::spawn(move || {
-            let mut alive = cor.lock().unwrap().alive.clone();
+
             alive.store(true, Ordering::SeqCst);
             {
                 let mut cor = cor.lock().unwrap();
+                cor.sample_rate = 48000;
                 cor.current_time = SystemTime::now();
             }
             let mut samples_count: i64 = 0;
@@ -113,14 +114,16 @@ impl Engine {
                 }
                 cor.compute_frame(FALLBACK_FRAME_SIZE);
                 samples_count = samples_count + FALLBACK_FRAME_SIZE as i64;
-                dbg!(samples_count);
+              //  dbg!(samples_count);
                 //thread::sleep(time::Duration::from_millis(10));
             }
+            dbg!("end circle");
         }));
     }
 
     fn stop_fallback(&mut self) {
         self.fallback_alive.store(false, Ordering::SeqCst);
+        dbg!("qweqwe");
         self.fallback_handle
             .take().expect("Called stop on non-running thread")
             .join().expect("Could not join spawned thread");
