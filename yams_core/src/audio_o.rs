@@ -7,10 +7,10 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::StreamError;
 use crate::module::*;
 use crate::port::*;
-
 use ringbuf::{HeapConsumer, HeapProducer, HeapRb};
 
-struct CpalStuff {
+
+struct CPALAudioDriver{
     input_stream: cpal::Stream,
     output_stream: cpal::Stream,
     host: cpal::Host,
@@ -20,14 +20,26 @@ struct CpalStuff {
     output_config: cpal::StreamConfig,
 }
 
-type Callback = Arc<Mutex<Box<dyn Fn() + Send + Sync>>>;
+impl AudioDriver for CPALAudioDriver{
+    fn recommended_framerate(&self) -> cpal::SampleRate {
+        self.input_config.sample_rate
+    }
+    fn start_process(&mut self, process_fn: Box<dyn Fn()>)
+    {
+
+    }
+    fn stop(&mut self)
+    {}
+}
+
+//type Callback = Arc<Mutex<Box<dyn Fn() + Send + Sync>>>;
 
 pub struct ModuleO {
     ins: Vec<AudioPort>,
     outs: Vec<AudioPort>,
     framerate: i64,
-    process_fn: Option<Callback>,
-    cpal_instance: Option<Box<CpalStuff>>,
+    //process_fn: Option<Callback>,
+    cpal_instance: Option<AudioDriverArc>,
 }
 
 // #[derive(Copy, Clone)]
@@ -54,16 +66,8 @@ impl Module for ModuleO {
         &mut self.outs
     }
 
-    fn recommended_framerate(&mut self) -> Option<cpal::SampleRate> {
-        return Some(self.cpal_instance.as_ref().unwrap().input_config.sample_rate);
-    }
-
-    fn can_be_default_module(&self) -> bool {
-        return true;
-    }
-
-    fn set_process_fn(&mut self, process_fn: Box<dyn Fn()>) {
-        //self.process_fn = process_fn;
+    fn audio_driver(&self) -> Option<AudioDriverArc> {
+        return self.cpal_instance.clone();
     }
 }
 
@@ -94,7 +98,7 @@ impl ModuleO {
         let input_config = input_device.default_input_config().unwrap().config();
         println!("Default input config: {:?}", &input_config);
 
-        let engine_fn = &self.process_fn;
+       // let engine_fn = &self.process_fn;
         // let data_in = VecPointerWrapper(&self.ins as *const Vec<AudioPort>);
         // let data_out = VecPointerWrapper(&self.outs as *const Vec<AudioPort>);
         // let arc_pointer_out = Arc::new(Mutex::new(&mut self.outs));
@@ -200,7 +204,7 @@ impl Default for ModuleO {
             ins: AudioPort::create_audio_ports(8),
             outs: AudioPort::create_audio_ports(8),
             framerate: 0,
-            process_fn: None,
+            // process_fn: None,
             cpal_instance: None,
         }
     }

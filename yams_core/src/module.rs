@@ -1,10 +1,17 @@
 use std::sync::{Arc, Mutex};
 use std::ptr::NonNull;
-use std::borrow::BorrowMut;
 use crate::AudioPort;
 
 pub type ModuleArc = Arc<Mutex<dyn Module>>;
 pub type ModulePointer = Option<NonNull<dyn Module>>;
+
+pub trait AudioDriver{
+    fn recommended_framerate(&self) -> cpal::SampleRate;
+    fn start_process(&mut self, process_fn: Box<dyn Fn()>);
+    fn stop(&mut self);
+}
+
+pub type AudioDriverArc = Arc<Mutex<dyn AudioDriver>>;
 
 pub trait Module {
     //fn hand_inputs(&mut self) -> &mut Vec<Port>;
@@ -13,10 +20,7 @@ pub trait Module {
     fn process(&mut self);
     fn inputs(&mut self) -> &mut Vec<AudioPort>;
     fn outputs(&mut self) -> &mut Vec<AudioPort>;
-
-    fn recommended_framerate(&mut self) -> Option<cpal::SampleRate>;
-    fn can_be_default_module(&self) -> bool;
-    fn set_process_fn(&mut self, process_fn: Box<dyn Fn()>);
+    fn audio_driver(& self) -> Option<AudioDriverArc>;
 }
 
 // extract unsafe fat pointer

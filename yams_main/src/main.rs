@@ -3,16 +3,6 @@ use yams_core::*;
 use std::{thread, time::Duration};
 use std::sync::{Arc, Mutex};
 
-//
-// slint::slint!{
-//     HelloWorld := Window {
-//         Text {
-//             text: "hello world";
-//             color: green;
-//         }
-//     }
-// }
-
 fn main() {
     let mut e = yams_core::Engine::default();
 

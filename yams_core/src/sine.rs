@@ -27,15 +27,9 @@ impl Module for ModuleSine {
         &mut self.outs
     }
 
-    fn recommended_framerate(&mut self) -> Option<cpal::SampleRate> {
-        return None;
+    fn audio_driver(&self) -> Option<AudioDriverArc> {
+        None
     }
-
-    fn can_be_default_module(&self) -> bool {
-        false
-    }
-
-    fn set_process_fn(&mut self, process_fn: Box<dyn Fn()>) {}
 }
 
 impl Default for ModuleSine {

@@ -8,7 +8,7 @@ use crate::cable::*;
 
 const FALLBACK_FRAME_SIZE: usize = 64;
 
-
+// low level structure for working with raw pointers
 struct RealTimeCore {
     pub modules_pointers: Vec<ModulePointer>,
     pub default_module: ModulePointer,
@@ -54,12 +54,25 @@ pub struct Engine {
 
 impl Engine {
     pub fn start(&mut self) {
-        self.fallback_alive.store(true, Ordering::SeqCst);
-        self.start_fallback();
+        let def_module = self.default_module();
+        match def_module {
+            None => {
+                self.start_fallback();
+            }
+            Some(m) =>{
+                //m.lock().unwrap().set_process_fn()
+
+            }
+        }
+
     }
 
     pub fn stop(&mut self) {
         self.stop_fallback();
+    }
+
+    fn default_module(&mut self) -> Option<&ModuleArc> {
+        return self.modules.iter().find(|m|{m.lock().unwrap().audio_driver().is_some()})
     }
 
 
@@ -77,6 +90,7 @@ impl Engine {
 
     fn start_fallback(&mut self) {
         dbg!("starting fallback...");
+        self.fallback_alive.store(true, Ordering::SeqCst);
         let cor = self.core.clone();
         self.fallback_handle = Some(thread::spawn(move || {
             let mut alive = cor.lock().unwrap().alive.clone();
