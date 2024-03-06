@@ -9,6 +9,9 @@ use crate::module::*;
 use crate::port::*;
 use ringbuf::{HeapConsumer, HeapProducer, HeapRb};
 
+#[derive(Copy, Clone)]
+struct VecPointerWrapper(*const Vec<AudioPort>);
+unsafe impl Send for VecPointerWrapper {}
 
 struct CPALAudioDriver{
     input_stream: cpal::Stream,
@@ -18,27 +21,84 @@ struct CPALAudioDriver{
     output_device: cpal::Device,
     input_config: cpal::StreamConfig,
     output_config: cpal::StreamConfig,
+    driver_callback: DriverCallback,
+}
+
+impl CPALAudioDriver{
+    fn create(to_engine: VecPointerWrapper, from_engine: VecPointerWrapper) -> Self{
+        let host = cpal::default_host();
+        let buffer = HeapRb::new(512);
+        let (mut producer, mut consumer) = buffer.split();
+
+        let output_device = host.default_output_device().unwrap();
+        let output_config = output_device.default_output_config().unwrap().into();
+        println!("Default output config: {:?}", &output_config);
+        let output_stream = output_device
+            .build_output_stream(
+                &output_config,
+                move |data: &mut [f32], info: &cpal::OutputCallbackInfo| {
+                    Self::output_fn(&mut consumer, data, info)
+                },
+                &Self::error_fn,
+                None,
+            ).unwrap();
+
+        let input_device = host.default_input_device().unwrap();
+        let input_config = input_device.default_input_config().unwrap().config();
+        println!("Default input config: {:?}", &input_config);
+
+        //let data_out = VecPointerWrapper(&self.outs as *const Vec<AudioPort>);
+        // let arc_pointer_out = Arc::new(Mutex::new(&mut self.outs));
+         let input_stream = input_device
+            .build_input_stream(
+                &input_config,
+                move |data: &[f32], info: &cpal::InputCallbackInfo| {
+                    Self::input_fn(&mut producer,
+                                   data,
+                                   info,
+                                   input_config.channels,
+                                   output_config.channels,
+                                   // data_in,
+                                   // data_out,
+                                   engine_fn.unwrap())
+                },
+                &Self::error_fn,
+                None,
+            ).unwrap();
+
+        // output_stream.play().unwrap();
+        // input_stream.play().unwrap();
+        //
+        //
+        // self.cpal_instance = Some(Box::new(CpalStuff {
+        //     input_stream,
+        //     output_stream,
+        //     host,
+        //     input_device,
+        //     output_device,
+        //     input_config,
+        //     output_config,
+        // }));
+    }
 }
 
 impl AudioDriver for CPALAudioDriver{
     fn recommended_framerate(&self) -> cpal::SampleRate {
         self.input_config.sample_rate
     }
-    fn start_process(&mut self, process_fn: Box<dyn Fn()>)
+    fn start_process(&self, process_fn: DriverCallback)
     {
 
     }
+
     fn stop(&mut self)
     {}
 }
-
-//type Callback = Arc<Mutex<Box<dyn Fn() + Send + Sync>>>;
 
 pub struct ModuleO {
     ins: Vec<AudioPort>,
     outs: Vec<AudioPort>,
     framerate: i64,
-    //process_fn: Option<Callback>,
     cpal_instance: Option<AudioDriverArc>,
 }
 
@@ -76,64 +136,6 @@ impl ModuleO {
         eprintln!("an error occurred on stream: {}", err);
     }
 
-    fn reinit(&mut self) {
-        let host = cpal::default_host();
-        let buffer = HeapRb::new(512);
-        let (mut producer, mut consumer) = buffer.split();
-
-        let output_device = host.default_output_device().unwrap();
-        let output_config = output_device.default_output_config().unwrap().into();
-        println!("Default output config: {:?}", &output_config);
-        let output_stream = output_device
-            .build_output_stream(
-                &output_config,
-                move |data: &mut [f32], info: &cpal::OutputCallbackInfo| {
-                    Self::output_fn(&mut consumer, data, info)
-                },
-                &Self::error_fn,
-                None,
-            ).unwrap();
-
-        let input_device = host.default_input_device().unwrap();
-        let input_config = input_device.default_input_config().unwrap().config();
-        println!("Default input config: {:?}", &input_config);
-
-       // let engine_fn = &self.process_fn;
-        // let data_in = VecPointerWrapper(&self.ins as *const Vec<AudioPort>);
-        // let data_out = VecPointerWrapper(&self.outs as *const Vec<AudioPort>);
-        // let arc_pointer_out = Arc::new(Mutex::new(&mut self.outs));
-        // let input_stream = input_device
-        //     .build_input_stream(
-        //         &input_config,
-        //         move |data: &[f32], info: &cpal::InputCallbackInfo| {
-        //             Self::input_fn(&mut producer,
-        //                            data,
-        //                            info,
-        //                            input_config.channels,
-        //                            output_config.channels,
-        //                            // data_in,
-        //                            // data_out,
-        //                            engine_fn.unwrap())
-        //         },
-        //         &Self::error_fn,
-        //         None,
-        //     ).unwrap();
-        //
-        // output_stream.play().unwrap();
-        // input_stream.play().unwrap();
-        //
-        //
-        // self.cpal_instance = Some(Box::new(CpalStuff {
-        //     input_stream,
-        //     output_stream,
-        //     host,
-        //     input_device,
-        //     output_device,
-        //     input_config,
-        //     output_config,
-        // }));
-    }
-
     fn output_fn(
         consumer: &mut HeapConsumer<f32>,
         data: &mut [f32],
@@ -169,33 +171,33 @@ impl ModuleO {
             dbg!(COUNT, COUNT_SAMPLES, SILENTS_FRAMES);
         }
     }
-    //
-    // fn input_fn(
-    //     producer: &mut HeapProducer<f32>,
-    //     data: &[f32],
-    //     calback_info: &cpal::InputCallbackInfo,
-    //     input_channels: cpal::ChannelCount,
-    //     output_channels: cpal::ChannelCount,
-    //     // ins: VecPointerWrapper,
-    //     // outs: VecPointerWrapper,
-    //     process_fn: Callback,
-    // ) {
-    //     unsafe {
-    //         let fn_cor = process_fn.as_ref().lock().unwrap().as_ref();
-    //         let mut input_fell_behind = false;
-    //         //COUNT_SAMPLES = COUNT_SAMPLES + data.len();
-    //         let in_samples_count = data.len() / input_channels as usize;
-    //         for i in 0..in_samples_count {
-    //             // for j in 0..input_channels {
-    //             //     *ins[j] = data[i * input_channels + j];
-    //             // }
-    //             fn_cor();
-    //             // for j in 0..output_channels {
-    //             //     producer.push(*outs[j])?;
-    //             // }
-    //         }
-    //     }
-    // }
+
+    fn input_fn(
+        producer: &mut HeapProducer<f32>,
+        data: &[f32],
+        calback_info: &cpal::InputCallbackInfo,
+        input_channels: cpal::ChannelCount,
+        output_channels: cpal::ChannelCount,
+        // ins: VecPointerWrapper,
+        // outs: VecPointerWrapper,
+        process_fn: Callback,
+    ) {
+        unsafe {
+            let fn_cor = process_fn.as_ref().lock().unwrap().as_ref();
+            let mut input_fell_behind = false;
+            //COUNT_SAMPLES = COUNT_SAMPLES + data.len();
+            let in_samples_count = data.len() / input_channels as usize;
+            for i in 0..in_samples_count {
+                // for j in 0..input_channels {
+                //     *ins[j] = data[i * input_channels + j];
+                // }
+                fn_cor();
+                // for j in 0..output_channels {
+                //     producer.push(*outs[j])?;
+                // }
+            }
+        }
+    }
 }
 
 impl Default for ModuleO {
@@ -204,7 +206,6 @@ impl Default for ModuleO {
             ins: AudioPort::create_audio_ports(8),
             outs: AudioPort::create_audio_ports(8),
             framerate: 0,
-            // process_fn: None,
             cpal_instance: None,
         }
     }

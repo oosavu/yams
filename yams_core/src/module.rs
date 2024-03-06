@@ -5,17 +5,17 @@ use crate::AudioPort;
 pub type ModuleArc = Arc<Mutex<dyn Module>>;
 pub type ModulePointer = Option<NonNull<dyn Module>>;
 
+pub type DriverCallback = Arc<Mutex<Box<dyn Fn() + Send + Sync>>>;
+
 pub trait AudioDriver{
     fn recommended_framerate(&self) -> cpal::SampleRate;
-    fn start_process(&mut self, process_fn: Box<dyn Fn()>);
+    fn start_process(&mut self, process_fn: DriverCallback);
     fn stop(&mut self);
 }
 
 pub type AudioDriverArc = Arc<Mutex<dyn AudioDriver>>;
 
 pub trait Module {
-    //fn hand_inputs(&mut self) -> &mut Vec<Port>;
-    //fn hand_outputs(&mut self) -> &mut Vec<Port>;
     fn set_framerate(&mut self, framerate: i64);
     fn process(&mut self);
     fn inputs(&mut self) -> &mut Vec<AudioPort>;
