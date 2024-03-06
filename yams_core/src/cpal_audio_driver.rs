@@ -6,12 +6,13 @@ use crate::module::*;
 use crate::port::*;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::StreamError;
-use ringbuf::{HeapConsumer, HeapProducer, HeapRb};
+use ringbuf::{HeapRb};
 use std::sync::{Arc, Mutex};
 
 pub struct CPALAudioDriver {
     input_stream: Option<cpal::Stream>,
     output_stream: Option<cpal::Stream>,
+    #[warn(dead_code)]
     host: cpal::Host,
     input_device: cpal::Device,
     output_device: cpal::Device,
@@ -61,9 +62,8 @@ impl AudioDriver for CPALAudioDriver {
 
         let output_channels = self.output_config.channels as usize;
 
-        let mut to_engine = self.to_engine;
-        let mut from_engine = self.from_engine;
-
+        let to_engine = self.to_engine;
+        let from_engine = self.from_engine;
         let to_engine_ref = unsafe { to_engine.0.as_mut().unwrap() };
         let from_engine_ref = unsafe { from_engine.0.as_ref().unwrap() };
 
@@ -71,13 +71,11 @@ impl AudioDriver for CPALAudioDriver {
             .output_device
             .build_output_stream(
                 &self.output_config,
-                move |data: &mut [f32], info: &cpal::OutputCallbackInfo| {
+                move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
                     let required_frames = data.len() / output_channels;
                     for frame in 0..required_frames {
                         for i in 0..input_channels {
-                            unsafe {
                                 to_engine_ref[i].value[0] = consumer.pop().unwrap();
-                            }
                         }
                         process_fn.lock().unwrap()();
                         for i in 0..output_channels {
@@ -96,9 +94,9 @@ impl AudioDriver for CPALAudioDriver {
             .input_device
             .build_input_stream(
                 &self.input_config,
-                move |data: &[f32], info: &cpal::InputCallbackInfo| {
+                move |data: &[f32], _: &cpal::InputCallbackInfo| {
                     for i in 0..data.len() {
-                        producer.push(data[i]);
+                        producer.push(data[i]).unwrap();
                     }
                 },
                 move |err: StreamError| {

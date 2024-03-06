@@ -1,4 +1,4 @@
-use crate::{AudioPort, UnsafeAudioPorts};
+use crate::{AudioPort};
 use std::ptr::NonNull;
 use std::sync::{Arc, Mutex};
 

@@ -1,10 +1,9 @@
 use crate::cable::*;
 use crate::module::*;
-pub use std::ptr::NonNull;
 pub use std::sync::atomic::{AtomicBool, Ordering};
 pub use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, SystemTime};
-pub use std::{thread, time};
+pub use std::{thread};
 
 const FALLBACK_FRAME_SIZE: usize = 64;
 
@@ -61,6 +60,10 @@ impl Engine {
                 self.start_fallback();
             }
             Some(m) => {
+
+                // m.lock().unwrap().audio_driver().unwrap().lock().unwrap().start_process(move || {
+                //
+                // })
                 //m.lock().unwrap().set_process_fn()
             }
         }
@@ -92,7 +95,7 @@ impl Engine {
     fn start_fallback(&mut self) {
         dbg!("starting fallback...");
         self.fallback_alive.store(true, Ordering::SeqCst);
-        let mut alive = self.fallback_alive.clone();
+        let alive = self.fallback_alive.clone();
         let cor = self.core.clone();
         self.fallback_handle = Some(thread::spawn(move || {
             alive.store(true, Ordering::SeqCst);
@@ -133,7 +136,7 @@ impl Engine {
         let cor = self.core.lock().unwrap();
         dbg!(
             "fallback stopped. working time: {}",
-            cor.current_time.elapsed()
+            cor.current_time.elapsed().unwrap()
         );
     }
 }
