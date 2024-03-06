@@ -1,7 +1,7 @@
 extern crate yams_core;
-use yams_core::*;
-use std::{thread, time::Duration};
 use std::sync::{Arc, Mutex};
+use std::{thread, time::Duration};
+use yams_core::*;
 
 fn main() {
     let mut e = yams_core::Engine::default();

@@ -2,13 +2,12 @@ extern crate anyhow;
 extern crate cpal;
 extern crate ringbuf;
 
-use std::sync::{Arc, Mutex};
-use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use cpal::StreamError;
 use crate::module::*;
 use crate::port::*;
+use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use cpal::StreamError;
 use ringbuf::{HeapConsumer, HeapProducer, HeapRb};
-
+use std::sync::{Arc, Mutex};
 
 pub struct CPALAudioDriver {
     input_stream: Option<cpal::Stream>,
@@ -55,24 +54,24 @@ impl AudioDriver for CPALAudioDriver {
     fn recommended_framerate(&self) -> cpal::SampleRate {
         self.input_config.sample_rate
     }
-    fn start_process(&mut self, process_fn: DriverCallback)
-    {
+    fn start_process(&mut self, process_fn: DriverCallback) {
         let input_channels = self.input_config.channels as usize;
         let buffer = HeapRb::<f32>::new(512 * input_channels);
         let (mut producer, mut consumer) = buffer.split();
 
         let output_channels = self.output_config.channels as usize;
 
-        let to_engine = self.to_engine;
-        let from_engine = self.from_engine;
+        let mut to_engine = self.to_engine;
+        let mut from_engine = self.from_engine;
 
-        let output_stream = self.output_device
+        let to_engine_ref = unsafe { to_engine.0.as_mut().unwrap() };
+        let from_engine_ref = unsafe { from_engine.0.as_ref().unwrap() };
+
+        let output_stream = self
+            .output_device
             .build_output_stream(
                 &self.output_config,
                 move |data: &mut [f32], info: &cpal::OutputCallbackInfo| {
-                    let to_engine_ref = unsafe { to_engine.0.as_ref().unwrap() };
-                    let from_engine_ref = unsafe { from_engine.0.as_ref().unwrap() };
-
                     let required_frames = data.len() / output_channels;
                     for frame in 0..required_frames {
                         for i in 0..input_channels {
@@ -90,9 +89,11 @@ impl AudioDriver for CPALAudioDriver {
                     eprintln!("an error occurred on output stream: {}", err);
                 },
                 None,
-            ).unwrap();
+            )
+            .unwrap();
 
-        let input_stream = self.input_device
+        let input_stream = self
+            .input_device
             .build_input_stream(
                 &self.input_config,
                 move |data: &[f32], info: &cpal::InputCallbackInfo| {
@@ -104,7 +105,8 @@ impl AudioDriver for CPALAudioDriver {
                     eprintln!("an error occurred on input stream: {}", err);
                 },
                 None,
-            ).unwrap();
+            )
+            .unwrap();
 
         output_stream.play().unwrap();
         input_stream.play().unwrap();
@@ -113,6 +115,5 @@ impl AudioDriver for CPALAudioDriver {
         self.output_stream = Some(output_stream);
     }
 
-    fn stop(&mut self)
-    {}
+    fn stop(&mut self) {}
 }

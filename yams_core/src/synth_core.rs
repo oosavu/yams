@@ -1,10 +1,10 @@
+use crate::cable::*;
+use crate::module::*;
+pub use std::ptr::NonNull;
 pub use std::sync::atomic::{AtomicBool, Ordering};
 pub use std::sync::{Arc, Condvar, Mutex};
-pub use std::{thread, time};
-pub use std::ptr::NonNull;
 use std::time::{Duration, SystemTime};
-use crate::module::*;
-use crate::cable::*;
+pub use std::{thread, time};
 
 const FALLBACK_FRAME_SIZE: usize = 64;
 
@@ -23,7 +23,8 @@ unsafe impl Send for RealTimeCore {}
 unsafe impl Sync for RealTimeCore {}
 
 impl RealTimeCore {
-    pub fn compute_frame(&mut self, time_frame: usize) { // TODO does it vectorized automativally?
+    pub fn compute_frame(&mut self, time_frame: usize) {
+        // TODO does it vectorized automativally?
         unsafe {
             for _ in 0..time_frame {
                 for m in self.modules_pointers.iter_mut() {
@@ -59,11 +60,10 @@ impl Engine {
             None => {
                 self.start_fallback();
             }
-            Some(m) =>{
+            Some(m) => {
                 //m.lock().unwrap().set_process_fn()
             }
         }
-
     }
 
     pub fn stop(&mut self) {
@@ -71,16 +71,19 @@ impl Engine {
     }
 
     fn default_module(&mut self) -> Option<&ModuleArc> {
-        return self.modules.iter().find(|m|{m.lock().unwrap().audio_driver().is_some()})
+        return self
+            .modules
+            .iter()
+            .find(|m| m.lock().unwrap().audio_driver().is_some());
     }
 
-    pub fn add_module(&mut self, module: &mut ModuleArc){
+    pub fn add_module(&mut self, module: &mut ModuleArc) {
         self.modules.push(module.clone());
         let mut cor = self.core.lock().unwrap();
         cor.modules_pointers.push(extract_pointer(&module));
     }
 
-    pub fn add_cable(&mut self,  cable: Cable){
+    pub fn add_cable(&mut self, cable: Cable) {
         //self.cables.push(cable);
         let mut cor = self.core.lock().unwrap();
         cor.cable_core.push(cable);
@@ -92,7 +95,6 @@ impl Engine {
         let mut alive = self.fallback_alive.clone();
         let cor = self.core.clone();
         self.fallback_handle = Some(thread::spawn(move || {
-
             alive.store(true, Ordering::SeqCst);
             {
                 let mut cor = cor.lock().unwrap();
@@ -104,16 +106,16 @@ impl Engine {
                 let mut cor = cor.lock().unwrap();
                 let duration = cor.current_time.elapsed().unwrap().as_millis() as i64;
                 let required_samples = cor.sample_rate * duration / 1000;
-                if required_samples < samples_count
-                {
-                    let pause_millis = (samples_count - required_samples) * 1000i64 / cor.sample_rate;
+                if required_samples < samples_count {
+                    let pause_millis =
+                        (samples_count - required_samples) * 1000i64 / cor.sample_rate;
                     //dbg!(pause_millis);
                     thread::sleep(Duration::from_millis(std::cmp::max(pause_millis as u64, 1)));
                     continue;
                 }
                 cor.compute_frame(FALLBACK_FRAME_SIZE);
                 samples_count = samples_count + FALLBACK_FRAME_SIZE as i64;
-              //  dbg!(samples_count);
+                //  dbg!(samples_count);
                 //thread::sleep(time::Duration::from_millis(10));
             }
             dbg!("end circle");
@@ -124,16 +126,21 @@ impl Engine {
         self.fallback_alive.store(false, Ordering::SeqCst);
         dbg!("qweqwe");
         self.fallback_handle
-            .take().expect("Called stop on non-running thread")
-            .join().expect("Could not join spawned thread");
+            .take()
+            .expect("Called stop on non-running thread")
+            .join()
+            .expect("Could not join spawned thread");
         let cor = self.core.lock().unwrap();
-        dbg!("fallback stopped. working time: {}", cor.current_time.elapsed());
+        dbg!(
+            "fallback stopped. working time: {}",
+            cor.current_time.elapsed()
+        );
     }
 }
 
-impl Default for Engine{
+impl Default for Engine {
     fn default() -> Self {
-        Engine{
+        Engine {
             modules: vec![],
             core: Arc::new(Mutex::new(RealTimeCore {
                 modules_pointers: vec![],
@@ -142,12 +149,12 @@ impl Default for Engine{
                 sample_rate: 0,
                 current_time: SystemTime::now(),
                 alive: Arc::new(Default::default()),
-                is_fallback_active: Arc::new((Mutex::new(false), Default::default()))
+                is_fallback_active: Arc::new((Mutex::new(false), Default::default())),
             })),
             fallback_mutex: Arc::new((Mutex::new(false), Default::default())),
             frame_rate: 0,
             fallback_handle: None,
-            fallback_alive: Arc::new(Default::default())
+            fallback_alive: Arc::new(Default::default()),
         }
     }
 }

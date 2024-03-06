@@ -1,6 +1,6 @@
+use crate::cpal_audio_driver::*;
 use crate::module::*;
 use crate::port::*;
-use crate::cpal_audio_driver::*;
 
 pub struct ModuleO {
     ins: Vec<AudioPort>,
@@ -32,11 +32,16 @@ impl Default for ModuleO {
         let ins_ports = AudioPort::create_audio_ports(8);
         let outs_ports = AudioPort::create_audio_ports(8);
 
-        ModuleO {
+        let mut res = ModuleO {
             ins: ins_ports,
             outs: outs_ports,
             framerate: 0,
-            cpal_instance: Some(CPALAudioDriver::create(UnsafeAudioPorts(&ins_ports), UnsafeAudioPorts(&outs_ports))),
-        }
+            cpal_instance: None,
+        };
+        res.cpal_instance = Some(CPALAudioDriver::create(
+            UnsafeAudioPorts(res.ins.as_mut()),
+            UnsafeAudioPorts(res.outs.as_mut()),
+        ));
+        return res;
     }
 }

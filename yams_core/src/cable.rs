@@ -8,8 +8,12 @@ pub struct Cable {
 }
 
 impl Cable {
-    pub fn new_cable(input_m: &mut ModuleArc, output_m: &mut ModuleArc, input_port: usize, output_port: usize) -> Self
-    {
+    pub fn new_cable(
+        input_m: &mut ModuleArc,
+        output_m: &mut ModuleArc,
+        input_port: usize,
+        output_port: usize,
+    ) -> Self {
         Cable {
             input_module_p: extract_pointer(input_m),
             output_module_p: extract_pointer(output_m),
