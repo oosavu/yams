@@ -21,6 +21,12 @@ impl AudioPort{
     }
 }
 
+// just way to share unsafe pointer to vector
+#[derive(Copy, Clone)]
+pub struct UnsafeAudioPorts(pub *const Vec<AudioPort>);
+unsafe impl Send for UnsafeAudioPorts {}
+unsafe impl Sync for UnsafeAudioPorts {}
+
 pub struct HandPort {
     pub value: f32,
 }

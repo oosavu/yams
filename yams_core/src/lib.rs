@@ -5,6 +5,7 @@ mod sine;
 mod port;
 mod module;
 mod cable;
+mod cpal_audio_driver;
 
 pub use synth_core::{Engine};
 pub use port::*;

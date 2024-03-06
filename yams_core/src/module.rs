@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 use std::ptr::NonNull;
-use crate::AudioPort;
+use crate::{AudioPort, UnsafeAudioPorts};
 
 pub type ModuleArc = Arc<Mutex<dyn Module>>;
 pub type ModulePointer = Option<NonNull<dyn Module>>;
