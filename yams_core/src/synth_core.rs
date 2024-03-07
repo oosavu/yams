@@ -8,7 +8,7 @@ pub use std::{thread};
 const FALLBACK_FRAME_SIZE: usize = 64;
 
 // low level structure for working with raw pointers
-struct RealTimeCore {
+pub struct RealTimeCore {
     pub modules_pointers: Vec<ModulePointer>,
     pub default_module: ModulePointer,
     pub cable_core: Vec<Cable>,
@@ -40,10 +40,12 @@ impl RealTimeCore {
     }
 }
 
+pub type RealTimeCoreArc =  Arc<Mutex<RealTimeCore>>;
+
 pub struct Engine {
     modules: Vec<ModuleArc>,
     //cables: Vec<Mutex<Cable>>,
-    core: Arc<Mutex<RealTimeCore>>,
+    core: RealTimeCoreArc,
 
     fallback_mutex: Arc<(Mutex<bool>, Condvar)>,
     frame_rate: i64,
@@ -60,7 +62,8 @@ impl Engine {
                 self.start_fallback();
             }
             Some(m) => {
-
+                let c = self.core.clone();
+                m.lock().unwrap().audio_driver().unwrap().lock().unwrap().start_process(c);
                 // m.lock().unwrap().audio_driver().unwrap().lock().unwrap().start_process(move || {
                 //
                 // })
@@ -73,7 +76,7 @@ impl Engine {
         self.stop_fallback();
     }
 
-    fn default_module(&mut self) -> Option<&ModuleArc> {
+    fn default_module(&self) -> Option<&ModuleArc> {
         return self
             .modules
             .iter()

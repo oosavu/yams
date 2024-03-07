@@ -1,4 +1,5 @@
 use crate::{AudioPort};
+use crate::synth_core::RealTimeCoreArc;
 use std::ptr::NonNull;
 use std::sync::{Arc, Mutex};
 
@@ -9,7 +10,7 @@ pub type DriverCallback = Arc<Mutex<Box<dyn Fn() + Send + Sync>>>;
 
 pub trait AudioDriver {
     fn recommended_framerate(&self) -> cpal::SampleRate;
-    fn start_process(&mut self, process_fn: DriverCallback);
+    fn start_process(&mut self, rt_core: RealTimeCoreArc);
     fn stop(&mut self);
 }
 

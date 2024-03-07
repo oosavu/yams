@@ -8,11 +8,12 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::StreamError;
 use ringbuf::{HeapRb};
 use std::sync::{Arc, Mutex};
+use crate::synth_core::RealTimeCoreArc;
 
 pub struct CPALAudioDriver {
     input_stream: Option<cpal::Stream>,
     output_stream: Option<cpal::Stream>,
-    #[warn(dead_code)]
+    #[allow(unused)]
     host: cpal::Host,
     input_device: cpal::Device,
     output_device: cpal::Device,
@@ -55,7 +56,7 @@ impl AudioDriver for CPALAudioDriver {
     fn recommended_framerate(&self) -> cpal::SampleRate {
         self.input_config.sample_rate
     }
-    fn start_process(&mut self, process_fn: DriverCallback) {
+    fn start_process(&mut self, rt_core: RealTimeCoreArc) {
         let input_channels = self.input_config.channels as usize;
         let buffer = HeapRb::<f32>::new(512 * input_channels);
         let (mut producer, mut consumer) = buffer.split();
@@ -73,11 +74,15 @@ impl AudioDriver for CPALAudioDriver {
                 &self.output_config,
                 move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
                     let required_frames = data.len() / output_channels;
+
                     for frame in 0..required_frames {
                         for i in 0..input_channels {
-                                to_engine_ref[i].value[0] = consumer.pop().unwrap();
+                            match consumer.pop(){
+                                None => (),
+                                Some(val) => {to_engine_ref[i].value[0] = val}
+                            }
                         }
-                        process_fn.lock().unwrap()();
+                        rt_core.lock().unwrap().compute_frame(1);
                         for i in 0..output_channels {
                             data[frame * output_channels + i] = from_engine_ref[i].value[0];
                         }
