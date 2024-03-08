@@ -58,7 +58,7 @@ impl AudioDriver for CPALAudioDriver {
     }
     fn start_process(&mut self, rt_core: RealTimeCoreArc) {
         let input_channels = self.input_config.channels as usize;
-        let buffer = HeapRb::<f32>::new(512 * input_channels);
+        let buffer = HeapRb::<f32>::new(2048 * input_channels);
         let (mut producer, mut consumer) = buffer.split();
 
         let output_channels = self.output_config.channels as usize;
@@ -79,7 +79,7 @@ impl AudioDriver for CPALAudioDriver {
                         for i in 0..input_channels {
                             match consumer.pop(){
                                 None => (),
-                                Some(val) => {to_engine_ref[i].value[0] = val}
+                                Some(val) => {to_engine_ref[i].value[0] = val} //{to_engine_ref[i].value[0] = val}
                             }
                         }
                         rt_core.lock().unwrap().compute_frame(1);
@@ -87,6 +87,7 @@ impl AudioDriver for CPALAudioDriver {
                             data[frame * output_channels + i] = from_engine_ref[i].value[0];
                         }
                     }
+                    println!("qwe {} {}",  data[0], data.len())
                 },
                 move |err: StreamError| {
                     eprintln!("an error occurred on output stream: {}", err);

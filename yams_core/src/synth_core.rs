@@ -73,7 +73,16 @@ impl Engine {
     }
 
     pub fn stop(&mut self) {
-        self.stop_fallback();
+        let def_module = self.default_module();
+        match def_module {
+            None => {
+                self.stop_fallback();
+            }
+            Some(m) => {
+                let c = self.core.clone();
+                m.lock().unwrap().audio_driver().unwrap().lock().unwrap().stop();
+            }
+        }
     }
 
     fn default_module(&self) -> Option<&ModuleArc> {

@@ -18,7 +18,7 @@ impl Module for ModuleSine {
 
         self.outs[0].value[0] =
             (self.sample_clock * 440.0 * 2.0 * std::f32::consts::PI / self.framerate as f32).sin();
-        //println!("outso:{}", self.outs[0].value)
+        // println!("outso:{}", self.outs[0].value[0])
     }
     fn inputs(&mut self) -> &mut Vec<AudioPort> {
         &mut self.ins
@@ -38,7 +38,7 @@ impl Default for ModuleSine {
             ins: vec![],
             outs: AudioPort::create_audio_ports(1),
             sample_clock: 0.0,
-            framerate: 0,
+            framerate: 44100,
         }
     }
 }
