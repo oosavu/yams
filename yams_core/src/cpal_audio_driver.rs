@@ -87,7 +87,7 @@ impl AudioDriver for CPALAudioDriver {
                             data[frame * output_channels + i] = from_engine_ref[i].value[0];
                         }
                     }
-                    println!("qwe {} {}",  data[0], data.len())
+                    // println!("qwe {} {}",  data[0], data.len())
                 },
                 move |err: StreamError| {
                     eprintln!("an error occurred on output stream: {}", err);
@@ -119,5 +119,8 @@ impl AudioDriver for CPALAudioDriver {
         self.output_stream = Some(output_stream);
     }
 
-    fn stop(&mut self) {}
+    fn stop(&mut self) {
+        self.input_stream = None;
+        self.output_stream = None;
+    }
 }
