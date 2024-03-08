@@ -14,8 +14,6 @@ fn main() {
     e.add_cable(Cable::new_cable(&mut ms, &mut ma, 0, 0));
 
     e.start();
-    dbg!("1");
     thread::sleep(Duration::from_millis(3000));
-    dbg!("2");
     e.stop();
 }

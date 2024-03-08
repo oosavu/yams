@@ -1,9 +1,9 @@
-use std::cell::UnsafeCell;
-use std::ops::{Deref, DerefMut};
-use std::sync::{Arc, Mutex};
 use crate::cpal_audio_driver::*;
 use crate::module::*;
 use crate::port::*;
+use std::cell::UnsafeCell;
+use std::ops::{Deref, DerefMut};
+use std::sync::{Arc, Mutex};
 
 pub struct ModuleO {
     ins: AudioPortsCell,
@@ -20,13 +20,13 @@ impl Module for ModuleO {
     fn inputs(&mut self) -> &mut Vec<AudioPort> {
         let mut qwe = self.ins.deref();
         let mut asd = qwe.get();
-        return unsafe{ asd.as_mut().unwrap()};
+        return unsafe { asd.as_mut().unwrap() };
     }
 
     fn outputs(&mut self) -> &mut Vec<AudioPort> {
         let mut qwe = self.outs.deref();
         let mut asd = qwe.get();
-        return unsafe{ asd.as_mut().unwrap()};
+        return unsafe { asd.as_mut().unwrap() };
     }
 
     fn audio_driver(&self) -> Option<AudioDriverArc> {
@@ -36,8 +36,8 @@ impl Module for ModuleO {
 
 impl Default for ModuleO {
     fn default() -> Self {
-         let ins_ports = Arc::new(UnsafeCell::new(AudioPort::create_audio_ports(8)));
-         let outs_ports = Arc::new(UnsafeCell::new(AudioPort::create_audio_ports(8)));
+        let ins_ports = Arc::new(UnsafeCell::new(AudioPort::create_audio_ports(8)));
+        let outs_ports = Arc::new(UnsafeCell::new(AudioPort::create_audio_ports(8)));
         //let ins_ports = UnsafeCell::new(AudioPort::create_audio_ports(8));
         //let outs_ports = UnsafeCell::new(AudioPort::create_audio_ports(8));
 

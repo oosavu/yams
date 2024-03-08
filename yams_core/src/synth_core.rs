@@ -2,8 +2,8 @@ use crate::cable::*;
 use crate::module::*;
 pub use std::sync::atomic::{AtomicBool, Ordering};
 pub use std::sync::{Arc, Condvar, Mutex};
+pub use std::thread;
 use std::time::{Duration, SystemTime};
-pub use std::{thread};
 
 const FALLBACK_FRAME_SIZE: usize = 64;
 
@@ -40,7 +40,7 @@ impl RealTimeCore {
     }
 }
 
-pub type RealTimeCoreArc =  Arc<Mutex<RealTimeCore>>;
+pub type RealTimeCoreArc = Arc<Mutex<RealTimeCore>>;
 
 pub struct Engine {
     modules: Vec<ModuleArc>,
@@ -63,7 +63,13 @@ impl Engine {
             }
             Some(m) => {
                 let c = self.core.clone();
-                m.lock().unwrap().audio_driver().unwrap().lock().unwrap().start_process(c);
+                m.lock()
+                    .unwrap()
+                    .audio_driver()
+                    .unwrap()
+                    .lock()
+                    .unwrap()
+                    .start_process(c);
                 // m.lock().unwrap().audio_driver().unwrap().lock().unwrap().start_process(move || {
                 //
                 // })
@@ -80,7 +86,13 @@ impl Engine {
             }
             Some(m) => {
                 let c = self.core.clone();
-                m.lock().unwrap().audio_driver().unwrap().lock().unwrap().stop();
+                m.lock()
+                    .unwrap()
+                    .audio_driver()
+                    .unwrap()
+                    .lock()
+                    .unwrap()
+                    .stop();
             }
         }
     }
@@ -95,7 +107,7 @@ impl Engine {
     pub fn add_module(&mut self, module: &mut ModuleArc) {
         self.modules.push(module.clone());
         let mut cor = self.core.lock().unwrap();
-        cor.modules_pointers.push(extract_pointer(&module));
+        cor.modules_pointers.push(extract_pointer(module));
     }
 
     pub fn add_cable(&mut self, cable: Cable) {
@@ -129,7 +141,7 @@ impl Engine {
                     continue;
                 }
                 cor.compute_frame(FALLBACK_FRAME_SIZE);
-                samples_count = samples_count + FALLBACK_FRAME_SIZE as i64;
+                samples_count += FALLBACK_FRAME_SIZE as i64;
                 //  dbg!(samples_count);
                 //thread::sleep(time::Duration::from_millis(10));
             }

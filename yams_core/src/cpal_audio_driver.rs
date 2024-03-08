@@ -4,11 +4,11 @@ extern crate ringbuf;
 
 use crate::module::*;
 use crate::port::*;
+use crate::synth_core::RealTimeCoreArc;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::StreamError;
-use ringbuf::{HeapRb};
+use ringbuf::HeapRb;
 use std::sync::{Arc, Mutex};
-use crate::synth_core::RealTimeCoreArc;
 
 pub struct CPALAudioDriver {
     input_stream: Option<cpal::Stream>,
@@ -63,10 +63,8 @@ impl AudioDriver for CPALAudioDriver {
 
         let output_channels = self.output_config.channels as usize;
 
-        let to_engine = self.to_engine;
-        let from_engine = self.from_engine;
-        let to_engine_ref = unsafe { to_engine.0.as_mut().unwrap() };
-        let from_engine_ref = unsafe { from_engine.0.as_ref().unwrap() };
+        let to_engine_ref = unsafe { self.to_engine.0.as_mut().unwrap() };
+        let from_engine_ref = unsafe { self.from_engine.0.as_ref().unwrap() };
 
         let output_stream = self
             .output_device
@@ -77,9 +75,9 @@ impl AudioDriver for CPALAudioDriver {
 
                     for frame in 0..required_frames {
                         for i in 0..input_channels {
-                            match consumer.pop(){
+                            match consumer.pop() {
                                 None => (),
-                                Some(val) => {to_engine_ref[i].value[0] = val} //{to_engine_ref[i].value[0] = val}
+                                Some(val) => to_engine_ref[i].value[0] = val,
                             }
                         }
                         rt_core.lock().unwrap().compute_frame(1);
@@ -87,7 +85,6 @@ impl AudioDriver for CPALAudioDriver {
                             data[frame * output_channels + i] = from_engine_ref[i].value[0];
                         }
                     }
-                    // println!("qwe {} {}",  data[0], data.len())
                 },
                 move |err: StreamError| {
                     eprintln!("an error occurred on output stream: {}", err);

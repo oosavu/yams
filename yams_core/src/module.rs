@@ -1,5 +1,5 @@
-use crate::{AudioPort};
 use crate::synth_core::RealTimeCoreArc;
+use crate::AudioPort;
 use std::ptr::NonNull;
 use std::sync::{Arc, Mutex};
 
