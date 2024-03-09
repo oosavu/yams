@@ -36,6 +36,7 @@ impl CPALAudioDriver {
         assert!(output_config.channels > 0);
         println!("Default output config: {:?}", &output_config);
 
+        #[allow(clippy::arc_with_non_send_sync)]
         return Arc::new(Mutex::new(CPALAudioDriver {
             input_stream: None,
             output_stream: None,
@@ -74,10 +75,11 @@ impl AudioDriver for CPALAudioDriver {
                     let required_frames = data.len() / output_channels;
 
                     for frame in 0..required_frames {
-                        for i in 0..input_channels {
+                        // for i in 0..input_channels {
+                        for p in to_engine_ref.iter_mut().take(input_channels) {
                             match consumer.pop() {
                                 None => (),
-                                Some(val) => to_engine_ref[i].value[0] = val,
+                                Some(val) => p.value[0] = val,
                             }
                         }
                         rt_core.lock().unwrap().compute_frame(1);
@@ -98,8 +100,9 @@ impl AudioDriver for CPALAudioDriver {
             .build_input_stream(
                 &self.input_config,
                 move |data: &[f32], _: &cpal::InputCallbackInfo| {
-                    for i in 0..data.len() {
-                        producer.push(data[i]).unwrap();
+                    //for i in 0..data.len() {
+                    for d in data {
+                        producer.push(*d).unwrap();
                     }
                 },
                 move |err: StreamError| {

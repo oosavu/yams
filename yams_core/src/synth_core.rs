@@ -51,7 +51,7 @@ pub struct Engine {
 
     #[allow(unused)]
     fallback_mutex: Arc<(Mutex<bool>, Condvar)>,
-    frame_rate: i64,
+    frame_rate: f64,
 
     fallback_handle: Option<thread::JoinHandle<()>>,
     fallback_alive: Arc<AtomicBool>, // alive of tread itself
@@ -66,16 +66,15 @@ impl Engine {
             }
             Some(m) => {
                 let c = self.core.clone();
-                let mut driver_arc  = m.lock()
-                    .unwrap()
-                    .audio_driver()
-                    .unwrap();
-                let mut driver = driver_arc
-                    .lock()
-                    .unwrap();
-                for modul in self.modules.iter_mut(){
-                    modul.lock().unwrap().set_framerate(driver.recommended_framerate().0 as f64);
+                let driver_arc = m.lock().unwrap().audio_driver().unwrap();
+                let mut driver = driver_arc.lock().unwrap();
+                for modul in self.modules.iter_mut() {
+                    modul
+                        .lock()
+                        .unwrap()
+                        .set_framerate(driver.recommended_framerate().0 as f64);
                 }
+                self.frame_rate = driver.recommended_framerate().0 as f64;
                 driver.start_process(c);
             }
         }
@@ -181,7 +180,7 @@ impl Default for Engine {
                 is_fallback_active: Arc::new((Mutex::new(false), Default::default())),
             })),
             fallback_mutex: Arc::new((Mutex::new(false), Default::default())),
-            frame_rate: 0,
+            frame_rate: 0.0f64,
             fallback_handle: None,
             fallback_alive: Arc::new(Default::default()),
         }

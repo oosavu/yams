@@ -6,7 +6,9 @@ use yams_core::*;
 fn main() {
     let mut e = yams_core::Engine::default();
 
+    #[allow(clippy::arc_with_non_send_sync)]
     let mut ms: ModuleArc = Arc::new(Mutex::new(ModuleSine::default()));
+    #[allow(clippy::arc_with_non_send_sync)]
     let mut ma: ModuleArc = Arc::new(Mutex::new(ModuleO::default()));
 
     e.add_module(&mut ms);

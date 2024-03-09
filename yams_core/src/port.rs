@@ -1,5 +1,5 @@
 use std::cell::UnsafeCell;
-use std::sync::{Arc};
+use std::sync::Arc;
 use std::vec::Vec;
 
 const CHANELS: usize = 16;
@@ -11,15 +11,15 @@ pub struct AudioPort {
 }
 impl Default for AudioPort {
     fn default() -> Self {
-        return AudioPort {
+        AudioPort {
             value: [0.0; CHANELS],
             count: 1,
-        };
+        }
     }
 }
 impl AudioPort {
     pub fn create_audio_ports(n: usize) -> Vec<AudioPort> {
-        return vec![AudioPort::default(); n];
+        vec![AudioPort::default(); n]
     }
 }
 

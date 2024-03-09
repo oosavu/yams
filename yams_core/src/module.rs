@@ -33,9 +33,9 @@ pub fn extract_pointer(module: &ModuleArc) -> ModulePointer {
     };
 }
 
-pub fn extract_pointer_from_vec(mods: &mut Vec<ModuleArc>, i: usize) -> ModulePointer {
+pub fn extract_pointer_from_vec(mods: &mut [ModuleArc], i: usize) -> ModulePointer {
     // get unsafe fat pointer
-    return extract_pointer(&mut mods[i]);
+    extract_pointer(&mods[i])
 }
 
 //

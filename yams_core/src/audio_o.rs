@@ -2,8 +2,8 @@ use crate::cpal_audio_driver::*;
 use crate::module::*;
 use crate::port::*;
 use std::cell::UnsafeCell;
-use std::ops::{Deref};
-use std::sync::{Arc};
+use std::ops::Deref;
+use std::sync::Arc;
 
 pub struct ModuleO {
     ins: AudioPortsCell,
@@ -18,21 +18,23 @@ impl Module for ModuleO {
     }
     fn process(&mut self) {}
     fn inputs(&mut self) -> &mut Vec<AudioPort> {
-        return unsafe{ self.ins.deref().get().as_mut().unwrap()};
+        return unsafe { self.ins.deref().get().as_mut().unwrap() };
     }
 
     fn outputs(&mut self) -> &mut Vec<AudioPort> {
-        return unsafe{ self.outs.deref().get().as_mut().unwrap()};
+        return unsafe { self.outs.deref().get().as_mut().unwrap() };
     }
 
     fn audio_driver(&self) -> Option<AudioDriverArc> {
-        return self.cpal_instance.clone();
+        self.cpal_instance.clone()
     }
 }
 
 impl Default for ModuleO {
     fn default() -> Self {
+        #[allow(clippy::arc_with_non_send_sync)]
         let ins_ports = Arc::new(UnsafeCell::new(AudioPort::create_audio_ports(8)));
+        #[allow(clippy::arc_with_non_send_sync)]
         let outs_ports = Arc::new(UnsafeCell::new(AudioPort::create_audio_ports(8)));
         //let ins_ports = UnsafeCell::new(AudioPort::create_audio_ports(8));
         //let outs_ports = UnsafeCell::new(AudioPort::create_audio_ports(8));
@@ -47,6 +49,6 @@ impl Default for ModuleO {
             UnsafeAudioPorts(res.outs.get()),
             UnsafeAudioPorts(res.ins.get()),
         ));
-        return res;
+        res
     }
 }
