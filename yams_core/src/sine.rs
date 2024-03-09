@@ -14,7 +14,7 @@ impl Module for ModuleSine {
     }
 
     fn process(&mut self) {
-        self.sample_clock = self.sample_clock + 1.0;
+        self.sample_clock += 1.0;
 
         self.outs[0].value[0] =
             (self.sample_clock * 440.0 * 2.0 * std::f32::consts::PI / self.framerate as f32).sin();
