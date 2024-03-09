@@ -2,31 +2,27 @@ use crate::cpal_audio_driver::*;
 use crate::module::*;
 use crate::port::*;
 use std::cell::UnsafeCell;
-use std::ops::{Deref, DerefMut};
-use std::sync::{Arc, Mutex};
+use std::ops::{Deref};
+use std::sync::{Arc};
 
 pub struct ModuleO {
     ins: AudioPortsCell,
     outs: AudioPortsCell,
-    framerate: i64,
+    framerate: f64,
     cpal_instance: Option<AudioDriverArc>,
 }
 
 impl Module for ModuleO {
-    fn set_framerate(&mut self, framerate: i64) {
+    fn set_framerate(&mut self, framerate: f64) {
         self.framerate = framerate;
     }
     fn process(&mut self) {}
     fn inputs(&mut self) -> &mut Vec<AudioPort> {
-        let mut qwe = self.ins.deref();
-        let mut asd = qwe.get();
-        return unsafe { asd.as_mut().unwrap() };
+        return unsafe{ self.ins.deref().get().as_mut().unwrap()};
     }
 
     fn outputs(&mut self) -> &mut Vec<AudioPort> {
-        let mut qwe = self.outs.deref();
-        let mut asd = qwe.get();
-        return unsafe { asd.as_mut().unwrap() };
+        return unsafe{ self.outs.deref().get().as_mut().unwrap()};
     }
 
     fn audio_driver(&self) -> Option<AudioDriverArc> {
@@ -44,7 +40,7 @@ impl Default for ModuleO {
         let mut res = ModuleO {
             ins: ins_ports,
             outs: outs_ports,
-            framerate: 0,
+            framerate: 0.0f64,
             cpal_instance: None,
         };
         res.cpal_instance = Some(CPALAudioDriver::create(

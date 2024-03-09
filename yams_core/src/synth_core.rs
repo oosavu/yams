@@ -14,7 +14,9 @@ pub struct RealTimeCore {
     pub cable_core: Vec<Cable>,
     pub sample_rate: i64,
     pub current_time: SystemTime,
+    #[allow(unused)]
     alive: Arc<AtomicBool>,
+    #[allow(unused)]
     is_fallback_active: Arc<(Mutex<bool>, Condvar)>,
 }
 
@@ -47,6 +49,7 @@ pub struct Engine {
     //cables: Vec<Mutex<Cable>>,
     core: RealTimeCoreArc,
 
+    #[allow(unused)]
     fallback_mutex: Arc<(Mutex<bool>, Condvar)>,
     frame_rate: i64,
 
@@ -63,17 +66,17 @@ impl Engine {
             }
             Some(m) => {
                 let c = self.core.clone();
-                m.lock()
+                let mut driver_arc  = m.lock()
                     .unwrap()
                     .audio_driver()
-                    .unwrap()
+                    .unwrap();
+                let mut driver = driver_arc
                     .lock()
-                    .unwrap()
-                    .start_process(c);
-                // m.lock().unwrap().audio_driver().unwrap().lock().unwrap().start_process(move || {
-                //
-                // })
-                //m.lock().unwrap().set_process_fn()
+                    .unwrap();
+                for modul in self.modules.iter_mut(){
+                    modul.lock().unwrap().set_framerate(driver.recommended_framerate().0 as f64);
+                }
+                driver.start_process(c);
             }
         }
     }
@@ -85,7 +88,6 @@ impl Engine {
                 self.stop_fallback();
             }
             Some(m) => {
-                let c = self.core.clone();
                 m.lock()
                     .unwrap()
                     .audio_driver()

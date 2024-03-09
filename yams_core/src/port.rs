@@ -1,6 +1,5 @@
 use std::cell::UnsafeCell;
-use std::panic::UnwindSafe;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc};
 use std::vec::Vec;
 
 const CHANELS: usize = 16;

@@ -17,8 +17,8 @@ impl Cable {
         Cable {
             input_module_p: extract_pointer(input_m),
             output_module_p: extract_pointer(output_m),
-            input_port: input_port,
-            output_port: output_port,
+            input_port,
+            output_port,
         }
     }
 }

@@ -17,7 +17,7 @@ pub trait AudioDriver {
 pub type AudioDriverArc = Arc<Mutex<dyn AudioDriver>>;
 
 pub trait Module {
-    fn set_framerate(&mut self, framerate: i64);
+    fn set_framerate(&mut self, framerate: f64);
     fn process(&mut self);
     fn inputs(&mut self) -> &mut Vec<AudioPort>;
     fn outputs(&mut self) -> &mut Vec<AudioPort>;
