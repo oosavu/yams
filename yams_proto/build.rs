@@ -1,8 +1,8 @@
 use flatbuffers_build::BuilderOptions;
 
 fn main() {
-    BuilderOptions::new_with_files(["schemas/weapon.fbs", "schemas/example.fbs"])
-        .set_symlink_directory("src/gen_flatbuffers")
+    BuilderOptions::new_with_files(["schemas/message.fbs"])
+        .set_symlink_directory("src/fb_api")
         .compile()
         .expect("flatbuffer compilation failed")
 }
