@@ -1,5 +1,4 @@
-use crate::module::*;
-use crate::port::*;
+use yams_core::*;
 
 pub struct ModuleSine {
     ins: Vec<AudioPort>,

@@ -1,6 +1,9 @@
 [workspace]
 resolver = "2"
 members = [
-    "yams_core",
     "yams_main",
-    "yams_proto"]
+    "yams_core",
+    "yams_proto",
+    "yams_default_modules",
+    "yams_engine",
+]

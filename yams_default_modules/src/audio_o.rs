@@ -1,6 +1,5 @@
 use crate::cpal_audio_driver::*;
-use crate::module::*;
-use crate::port::*;
+use yams_core::*;
 use std::cell::UnsafeCell;
 use std::ops::Deref;
 use std::sync::Arc;

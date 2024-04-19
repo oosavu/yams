@@ -1,0 +1,12 @@
+[package]
+name = "yams_engine"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+yams_core = { path = "../yams_core" }
+yams_default_modules = { path = "../yams_default_modules" }
+cpal = { version = "*" }
+anyhow = { version = "*" }
+clap = { version = "*" }
+ringbuf = { version = "*" }

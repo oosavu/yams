@@ -1011,17 +1011,38 @@ dependencies = [
 name = "yams_core"
 version = "0.1.0"
 dependencies = [
+ "cpal",
+]
+
+[[package]]
+name = "yams_default_modules"
+version = "0.1.0"
+dependencies = [
  "anyhow",
  "clap",
  "cpal",
  "ringbuf",
+ "yams_core",
+]
+
+[[package]]
+name = "yams_engine"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "cpal",
+ "ringbuf",
+ "yams_core",
+ "yams_default_modules",
 ]
 
 [[package]]
 name = "yams_main"
 version = "0.1.0"
 dependencies = [
- "yams_core",
+ "yams_default_modules",
+ "yams_engine",
 ]
 
 [[package]]

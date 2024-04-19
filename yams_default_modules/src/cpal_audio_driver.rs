@@ -1,10 +1,10 @@
-extern crate anyhow;
-extern crate cpal;
-extern crate ringbuf;
+use yams_core::*;
+use anyhow;
+use cpal;
+use ringbuf;
+use yams_core;
 
-use crate::module::*;
-use crate::port::*;
-use crate::synth_core::RealTimeCoreArc;
+use yams_core::RealTimeCoreArc;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::StreamError;
 use ringbuf::HeapRb;
