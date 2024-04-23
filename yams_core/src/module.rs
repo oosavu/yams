@@ -5,7 +5,6 @@ use std::sync::{Arc, Mutex};
 
 pub type ModuleArc = Arc<Mutex<dyn Module>>;
 pub type ModulePointer = Option<NonNull<dyn Module>>;
-
 pub type DriverCallback = Arc<Mutex<Box<dyn Fn() + Send + Sync>>>;
 
 pub trait AudioDriver {

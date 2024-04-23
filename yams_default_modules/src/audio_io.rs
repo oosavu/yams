@@ -4,14 +4,14 @@ use std::cell::UnsafeCell;
 use std::ops::Deref;
 use std::sync::Arc;
 
-pub struct ModuleO {
+pub struct ModuleIO {
     ins: AudioPortsCell,
     outs: AudioPortsCell,
     framerate: f64,
     cpal_instance: Option<AudioDriverArc>,
 }
 
-impl Module for ModuleO {
+impl Module for ModuleIO {
     fn set_framerate(&mut self, framerate: f64) {
         self.framerate = framerate;
     }
@@ -27,9 +27,11 @@ impl Module for ModuleO {
     fn audio_driver(&self) -> Option<AudioDriverArc> {
         self.cpal_instance.clone()
     }
+
 }
 
-impl Default for ModuleO {
+
+impl Default for ModuleIO {
     fn default() -> Self {
         #[allow(clippy::arc_with_non_send_sync)]
         let ins_ports = Arc::new(UnsafeCell::new(AudioPort::create_audio_ports(8)));
@@ -38,7 +40,7 @@ impl Default for ModuleO {
         //let ins_ports = UnsafeCell::new(AudioPort::create_audio_ports(8));
         //let outs_ports = UnsafeCell::new(AudioPort::create_audio_ports(8));
 
-        let mut res = ModuleO {
+        let mut res = ModuleIO {
             ins: ins_ports,
             outs: outs_ports,
             framerate: 0.0f64,

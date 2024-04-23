@@ -12,7 +12,7 @@ fn main() {
     // #[allow(clippy::arc_with_non_send_sync)]
     //     let mut ms2: ModuleArc = Arc::new(Mutex::new(ModuleSine::default()));
     // #[allow(clippy::arc_with_non_send_sync)]
-    //     let mut ma: ModuleArc = Arc::new(Mutex::new(ModuleO::default()));
+    //     let mut ma: ModuleArc = Arc::new(Mutex::new(ModuleIO::default()));
     //
     // e.add_module(&mut ms1);
     // e.add_module(&mut ms2);

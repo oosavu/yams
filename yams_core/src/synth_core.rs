@@ -13,9 +13,9 @@ pub struct RealTimeCore {
     pub sample_rate: i64,
     pub current_time: SystemTime,
     #[allow(unused)]
-    alive: Arc<AtomicBool>,
+    pub alive: Arc<AtomicBool>,
     #[allow(unused)]
-    is_fallback_active: Arc<(Mutex<bool>, Condvar)>,
+    pub is_fallback_active: Arc<(Mutex<bool>, Condvar)>,
 }
 
 unsafe impl Send for RealTimeCore {}
