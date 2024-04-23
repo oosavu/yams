@@ -1026,23 +1026,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "yams_engine"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "cpal",
- "ringbuf",
- "yams_core",
- "yams_default_modules",
-]
-
-[[package]]
 name = "yams_main"
 version = "0.1.0"
 dependencies = [
  "yams_default_modules",
- "yams_engine",
+ "yams_server",
 ]
 
 [[package]]
@@ -1051,4 +1039,16 @@ version = "0.1.0"
 dependencies = [
  "flatbuffers",
  "flatbuffers-build",
+]
+
+[[package]]
+name = "yams_server"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "cpal",
+ "ringbuf",
+ "yams_core",
+ "yams_default_modules",
 ]

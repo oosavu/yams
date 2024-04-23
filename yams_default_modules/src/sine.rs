@@ -31,6 +31,33 @@ impl Module for ModuleSine {
     }
 }
 
+pub struct ModuleSineFabric {
+    info: ModuleInfo,
+}
+
+impl ModuleFabric for ModuleSineFabric {
+    fn create(&self) -> ModuleArc {
+        Arc::new(Mutex::new(ModuleSine::default()))
+    }
+    fn info(&self) -> &ModuleInfo {
+        &self.info
+    }
+}
+
+impl Default for ModuleSineFabric {
+    fn default() -> Self {
+        ModuleSineFabric {
+            info: ModuleInfo {
+                name: "sine".to_string(),
+                inputs: vec![PortInfo { name: "freq".to_string(), channels: 1 },
+                ],
+                outputs: vec![PortInfo { name: "out".to_string(), channels: 1 },
+                ],
+            },
+        }
+    }
+}
+
 impl Default for ModuleSine {
     fn default() -> Self {
         ModuleSine {

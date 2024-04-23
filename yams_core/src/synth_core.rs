@@ -3,7 +3,7 @@ use crate::module::*;
 pub use std::sync::atomic::{AtomicBool, Ordering};
 pub use std::sync::{Arc, Condvar, Mutex};
 pub use std::thread;
-use std::time::{Duration, SystemTime};
+use std::time::SystemTime;
 
 // low level structure for working with raw pointers
 pub struct RealTimeCore {

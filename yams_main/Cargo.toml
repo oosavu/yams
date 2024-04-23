@@ -9,7 +9,7 @@ edition = "2021"
 
 [dependencies]
 #slint = "0.2.4"
-yams_engine = { path = "../yams_engine" }
+yams_server = { path = "../yams_server" }
 yams_default_modules = { path = "../yams_default_modules" }
 
 #[profile.dev.build-override]

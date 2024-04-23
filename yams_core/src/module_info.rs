@@ -1,12 +1,10 @@
-
-
-pub struct PortInfo{
-    name: String,
-    channels: i32,
+pub struct PortInfo {
+    pub name: String,
+    pub channels: i32,
 }
 
-pub struct ModuleInfo{
-    name: String,
-    inputs: Vec<PortInfo>,
-    outputs: Vec<PortInfo>,
+pub struct ModuleInfo {
+    pub name: String,
+    pub inputs: Vec<PortInfo>,
+    pub outputs: Vec<PortInfo>,
 }

@@ -1,5 +1,6 @@
 use crate::synth_core::RealTimeCoreArc;
 use crate::AudioPort;
+use crate::ModuleInfo;
 use std::ptr::NonNull;
 use std::sync::{Arc, Mutex};
 
@@ -36,6 +37,12 @@ pub fn extract_pointer_from_vec(mods: &mut [ModuleArc], i: usize) -> ModulePoint
     // get unsafe fat pointer
     extract_pointer(&mods[i])
 }
+
+pub trait ModuleFabric{
+    fn info(&self) -> &ModuleInfo;
+    fn create(&self) -> ModuleArc;
+}
+
 
 //
 // pub(crate) trait DefaultModuleInterface {}

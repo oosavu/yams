@@ -1,14 +1,14 @@
-use yams_core::*;
 use anyhow;
 use cpal;
 use ringbuf;
 use yams_core;
+use yams_core::*;
 
-use yams_core::RealTimeCoreArc;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::StreamError;
 use ringbuf::HeapRb;
 use std::sync::{Arc, Mutex};
+use yams_core::RealTimeCoreArc;
 
 pub struct CPALAudioDriver {
     input_stream: Option<cpal::Stream>,

@@ -1,8 +1,8 @@
+use crate::{extract_pointer, Cable, ModuleArc, RealTimeCore, RealTimeCoreArc};
 pub use std::sync::atomic::{AtomicBool, Ordering};
 pub use std::sync::{Arc, Condvar, Mutex};
 pub use std::thread;
 use std::time::{Duration, SystemTime};
-use crate::{Cable, extract_pointer, ModuleArc, RealTimeCore, RealTimeCoreArc};
 
 const FALLBACK_FRAME_SIZE: usize = 64;
 
@@ -17,8 +17,6 @@ pub struct Engine {
 
     fallback_handle: Option<thread::JoinHandle<()>>,
     fallback_alive: Arc<AtomicBool>, // alive of tread itself
-
-
 }
 
 impl Engine {
@@ -150,7 +148,6 @@ impl Default for Engine {
         }
     }
 }
-
 
 //
 // pub fn test_engine() -> Engine {

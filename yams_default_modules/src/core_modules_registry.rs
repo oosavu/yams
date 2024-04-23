@@ -1,23 +1,25 @@
-use std::sync::{Arc, Mutex};
-use yams_core::{Module, ModuleArc, ModuleInfo, ModulesRegistry};
-use crate::sine::ModuleSine;
-use crate::audio_io::ModuleIO;
+use std::collections::HashMap;
 
+use yams_core::{ModuleFabric, ModulesRegistry};
 
-pub struct Scope{
-    modules_info: Vec<ModuleInfo>
+use crate::audio_io::ModuleIOFabric;
+use crate::sine::ModuleSineFabric;
+
+pub struct CoresRegistry {
+    fabrics: HashMap<String, Box<dyn ModuleFabric>>,
 }
 
-impl ModulesRegistry for Scope {
-    fn modules(&self) -> &Vec<ModuleInfo> {
-        &self.modules_info
+impl ModulesRegistry for CoresRegistry {
+    fn fabrics(&self) -> &HashMap<String, Box<dyn ModuleFabric>> {
+        return &self.fabrics;
     }
+}
 
-    fn create_module(name: &str) -> Option<ModuleArc> {
-        match name {
-            "audio_io" => Some(Arc::new(Mutex::new(ModuleIO::default())) as ModuleArc),
-            "sine" => Some(Arc::new(Mutex::new(ModuleSine::default())) as ModuleArc),
-            _ => None,
-        }
+pub fn create_registry() -> CoresRegistry {
+    CoresRegistry {
+        fabrics: HashMap::from([
+            ("sine".to_string(), Box::new(ModuleSineFabric::default()) as Box<dyn ModuleFabric>),
+            ("audio_io".to_string(), Box::new(ModuleIOFabric::default()) as Box<dyn ModuleFabric>),
+        ])
     }
 }

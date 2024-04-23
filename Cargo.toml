@@ -5,5 +5,5 @@ members = [
     "yams_core",
     "yams_proto",
     "yams_default_modules",
-    "yams_engine",
+    "yams_server",
 ]
