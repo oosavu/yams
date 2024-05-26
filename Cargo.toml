@@ -3,7 +3,6 @@ resolver = "2"
 members = [
     "yams_main",
     "yams_core",
-    "yams_proto",
     "yams_default_modules",
     "yams_server",
 ]

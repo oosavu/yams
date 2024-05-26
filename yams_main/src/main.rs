@@ -4,6 +4,10 @@ use yams_default_modules::*;
 use yams_server::*;
 
 fn main() {
+    let mut server = Server::default();
+    server.add_module("sine");
+    server.add_module("audio_io");
+    // server
     // let mut e = Engine::default();
     //
     // #[allow(clippy::arc_with_non_send_sync)]
