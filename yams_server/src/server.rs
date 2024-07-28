@@ -1,10 +1,12 @@
 use yams_core::{Engine, ModulesRegistry};
 use yams_default_modules::create_registry;
-
+use steel::steel_vm::*;
+use steel::SteelVal;
 
 pub struct Server{
     engine: Engine,
-    registries: Vec<Box<dyn ModulesRegistry>>
+    registries: Vec<Box<dyn ModulesRegistry>>,
+    steel_engine: engine::Engine
 }
 
 impl Server {
@@ -14,16 +16,14 @@ impl Server {
     pub fn stop(&mut self) {
         self.engine.stop();
     }
-    pub fn add_module(&mut self, name: &str) {
-        //self.registries.at(0).fabrics().get(name).unwrap().create_module(&mut self.engine);
+    pub fn exec_script(&mut self, script: &str) -> String {
+        let mut steel_engine = engine::Engine::new();
+        let answer = steel_engine.run( script.to_string());
+        match answer {
+            Ok(x) => "".to_string(),
+            Err(x) => "".to_string()
+        }
     }
-
-    // pub fn command(&mut self, command: &[u8]) -> Result<Vec<u8>, yams_proto::Error> {
-    //     // let fb = yams_proto::root_as_message(command);
-    //     //
-    //     // let mut builder = flatbuffers::FlatBufferBuilder::new();
-    //     // builder
-    // }
 }
 
 impl Default for Server {
@@ -31,6 +31,7 @@ impl Default for Server {
         Server {
             engine: Engine::default(),
             registries: vec![Box::new(create_registry())],
+            steel_engine: engine::Engine::new(),
         }
     }
 }

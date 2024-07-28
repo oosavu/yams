@@ -5,8 +5,8 @@ use yams_server::*;
 
 fn main() {
     let mut server = Server::default();
-    server.add_module("sine");
-    server.add_module("audio_io");
+
+    server.exec_script("sine");
     // server
     // let mut e = Engine::default();
     //

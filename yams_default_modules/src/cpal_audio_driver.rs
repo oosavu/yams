@@ -6,7 +6,9 @@ use yams_core::*;
 
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::StreamError;
-use ringbuf::HeapRb;
+use ringbuf::{
+    traits::{Consumer, Producer, Split},
+    HeapRb};
 use std::sync::{Arc, Mutex};
 use yams_core::RealTimeCoreArc;
 
@@ -77,7 +79,7 @@ impl AudioDriver for CPALAudioDriver {
                     for frame in 0..required_frames {
                         // for i in 0..input_channels {
                         for p in to_engine_ref.iter_mut().take(input_channels) {
-                            match consumer.pop() {
+                            match consumer.try_pop() {
                                 None => (),
                                 Some(val) => p.value[0] = val,
                             }
@@ -102,7 +104,7 @@ impl AudioDriver for CPALAudioDriver {
                 move |data: &[f32], _: &cpal::InputCallbackInfo| {
                     //for i in 0..data.len() {
                     for d in data {
-                        producer.push(*d).unwrap();
+                        producer.try_push(*d).unwrap();
                     }
                 },
                 move |err: StreamError| {
