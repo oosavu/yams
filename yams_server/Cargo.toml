@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 yams_core = { path = "../yams_core" }
 yams_default_modules = { path = "../yams_default_modules" }
-steel-core = { git="https://github.com/mattwparas/steel.git", branch = "master" }
+steel-core = { git="https://github.com/mattwparas/steel.git"}

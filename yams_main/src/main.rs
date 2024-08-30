@@ -1,12 +1,26 @@
+mod steel_copy;
+
 use std::sync::{Arc, Mutex};
 use std::{thread, time::Duration};
 use yams_default_modules::*;
 use yams_server::*;
 
-fn main() {
-    let mut server = Server::default();
+use std::error::Error;
 
-    server.exec_script("sine");
+use clap::Parser;
+use steel_copy::Args;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    env_logger::init();
+    let clap_args = Args::parse();
+    steel_copy::run(clap_args)?;
+    Ok(())
+    // let clap_args = Args::parse();
+    // steel_copy::run(clap_args)?;
+
+   // let mut server = Server::default();
+   // server.exec_script("sine");
+
     // server
     // let mut e = Engine::default();
     //
