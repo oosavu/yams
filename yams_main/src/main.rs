@@ -1,25 +1,71 @@
-mod steel_copy;
+extern crate steel;
+extern crate steel_derive;
+extern crate steel_repl;
 
+use steel::steel_vm::engine::Engine;
+use steel_doc::walk_dir;
+use steel_repl::run_repl;
+
+use std::path::PathBuf;
+use std::process;
+use std::{error::Error, fs};
+
+use clap::Parser;
+use log::{debug, error};
 use std::sync::{Arc, Mutex};
 use std::{thread, time::Duration};
 use yams_default_modules::*;
 use yams_server::*;
+use env_logger::Env;
 
-use std::error::Error;
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+pub struct Args {
+    /// script file
+    default_file: Option<PathBuf>,
+}
 
-use clap::Parser;
-use steel_copy::Args;
+pub fn run(clap_args: Args) -> Result<(), Box<dyn Error>> {
+    let mut vm = Engine::new();
+    vm.register_value("std::env::args", steel::SteelVal::ListV(vec![].into()));
+
+    debug!("qwe clap_args: {clap_args:?}");
+    match clap_args {
+        Args {
+            default_file: None,
+        } => {
+            run_repl(vm)?;
+            Ok(())
+        }
+
+        Args {
+            default_file: Some(path),
+        } => {
+            let contents = fs::read_to_string(&path)?;
+            let res = vm.compile_and_run_raw_program_with_path(contents.clone(), path.clone());
+
+            if let Err(e) = res {
+                vm.raise_error(e.clone());
+                process::exit(1);
+            }
+
+            Ok(())
+        }
+    }
+}
 
 fn main() -> Result<(), Box<dyn Error>> {
-    env_logger::init();
+    env_logger::Builder::from_env(Env::default().default_filter_or("yams_main=debug")).init();
     let clap_args = Args::parse();
-    steel_copy::run(clap_args)?;
+    run(clap_args)?;
     Ok(())
+
+
     // let clap_args = Args::parse();
     // steel_copy::run(clap_args)?;
 
-   // let mut server = Server::default();
-   // server.exec_script("sine");
+    // let mut server = Server::default();
+    // server.exec_script("sine");
 
     // server
     // let mut e = Engine::default();

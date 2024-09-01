@@ -35,7 +35,7 @@ pub struct ModuleIOFabric {
 
 impl ModuleFabric for ModuleIOFabric {
     fn info(&self) -> &ModuleInfo {
-        self.info()
+        &self.info
     }
 
     fn create(&self) -> ModuleArc {

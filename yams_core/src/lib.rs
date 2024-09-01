@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+#![allow(unused)]
 mod engine;
 mod cable;
 mod module;

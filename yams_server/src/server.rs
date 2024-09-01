@@ -1,11 +1,13 @@
 use yams_core::{Engine, ModulesRegistry};
 use yams_default_modules::create_registry;
 use steel::steel_vm::*;
-use steel::SteelVal;
+// use steel::SteelVal;
 
 pub struct Server{
     engine: Engine,
+    #[allow(unused)]
     registries: Vec<Box<dyn ModulesRegistry>>,
+    #[allow(unused)]
     steel_engine: engine::Engine
 }
 
@@ -16,13 +18,15 @@ impl Server {
     pub fn stop(&mut self) {
         self.engine.stop();
     }
+    #[allow(unused)]
     pub fn exec_script(&mut self, script: &str) -> String {
-        let mut steel_engine = engine::Engine::new();
-        let answer = steel_engine.run( script.to_string());
-        match answer {
-            Ok(x) => "".to_string(),
-            Err(x) => "".to_string()
-        }
+        // let mut steel_engine = engine::Engine::new();
+        // let answer = steel_engine.run( script.to_string());
+        // match answer {
+        //     Ok(x) => "".to_string(),
+        //     Err(x) => "".to_string()
+        // }
+        "".to_string()
     }
 }
 
