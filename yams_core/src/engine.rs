@@ -73,6 +73,12 @@ impl Engine {
         cor.modules_pointers.push(extract_pointer(module));
     }
 
+    pub fn remove_module(&mut self, module: &mut ModuleArc) {
+        self.modules.push(module.clone());
+        let mut cor = self.core.lock().unwrap();
+        cor.modules_pointers.push(extract_pointer(module));
+    }
+
     pub fn add_cable(&mut self, cable: Cable) {
         //self.cables.push(cable);
         let mut cor = self.core.lock().unwrap();

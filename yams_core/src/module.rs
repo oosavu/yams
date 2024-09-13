@@ -1,5 +1,5 @@
 use crate::synth_core::RealTimeCoreArc;
-use crate::AudioPort;
+use crate::{AudioPort, Parameter};
 use crate::ModuleInfo;
 use std::ptr::NonNull;
 use std::sync::{Arc, Mutex};
@@ -21,6 +21,8 @@ pub trait Module {
     fn process(&mut self);
     fn inputs(&mut self) -> &mut Vec<AudioPort>;
     fn outputs(&mut self) -> &mut Vec<AudioPort>;
+    fn parameters(&mut self) -> &mut Vec<Parameter>;
+
     fn audio_driver(&self) -> Option<AudioDriverArc>;
 }
 
@@ -33,38 +35,7 @@ pub fn extract_pointer(module: &ModuleArc) -> ModulePointer {
     };
 }
 
-pub fn extract_pointer_from_vec(mods: &mut [ModuleArc], i: usize) -> ModulePointer {
-    // get unsafe fat pointer
-    extract_pointer(&mods[i])
-}
-
 pub trait ModuleFabric{
     fn info(&self) -> &ModuleInfo;
     fn create(&self) -> ModuleArc;
 }
-
-
-//
-// pub(crate) trait DefaultModuleInterface {}
-//
-// type DefaultModulePointer = Option<NonNull<dyn DefaultModuleInterface>>;
-//
-//
-// pub(crate) trait DefaultModule {
-//     fn defult_module_interface() -> DefaultModulePointer;
-// }
-
-//Specialized for audio only for executing worker thread in it
-// macro_rules! is_default_module {
-//     ($($t:ty),+ $(,)?) => ($(
-//         impl DefaultModule for $t {
-//             fn jobs(&self) -> Box<De> {
-//                 &self.defa
-//             }
-//
-//             fn jobs_mut(&mut self) -> &mut Vec<String> {
-//                 &mut self.jobs
-//             }
-//         }
-//     )+)
-// }

@@ -7,6 +7,7 @@ use yams_core::*;
 pub struct ModuleIO {
     ins: AudioPortsCell,
     outs: AudioPortsCell,
+    parameters: Vec<Parameter>,
     framerate: f64,
     cpal_instance: Option<AudioDriverArc>,
 }
@@ -26,6 +27,10 @@ impl Module for ModuleIO {
 
     fn audio_driver(&self) -> Option<AudioDriverArc> {
         self.cpal_instance.clone()
+    }
+
+    fn parameters(&mut self) -> &mut Vec<Parameter> {
+        return self.parameters.as_mut();
     }
 }
 
@@ -74,17 +79,16 @@ impl Default for ModuleIOFabric {
 impl Default for ModuleIO {
     fn default() -> Self {
         #[allow(clippy::arc_with_non_send_sync)]
-            let ins_ports = Arc::new(UnsafeCell::new(AudioPort::create_audio_ports(8)));
+            let ins_ports = Arc::new(UnsafeCell::new(AudioPort::create_n_audio_ports(8, "input")));
         #[allow(clippy::arc_with_non_send_sync)]
-            let outs_ports = Arc::new(UnsafeCell::new(AudioPort::create_audio_ports(8)));
-        //let ins_ports = UnsafeCell::new(AudioPort::create_audio_ports(8));
-        //let outs_ports = UnsafeCell::new(AudioPort::create_audio_ports(8));
+            let outs_ports = Arc::new(UnsafeCell::new(AudioPort::create_n_audio_ports(8, "output")));
 
         let mut res = ModuleIO {
             ins: ins_ports,
             outs: outs_ports,
             framerate: 0.0f64,
             cpal_instance: None,
+            parameters: vec![],
         };
         res.cpal_instance = Some(CPALAudioDriver::create(
             UnsafeAudioPorts(res.outs.get()),

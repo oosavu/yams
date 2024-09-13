@@ -27,8 +27,8 @@ impl RealTimeCore {
         unsafe {
             for _ in 0..time_frame {
                 for m in self.modules_pointers.iter_mut() {
-                    let qwe = &mut *m.unwrap().as_mut();
-                    qwe.process();
+                    let dyn_m = &mut *m.unwrap().as_mut();
+                    dyn_m.process();
                 }
                 for c in self.cable_core.iter_mut() {
                     let input_m = &mut *c.input_module_p.unwrap().as_mut();

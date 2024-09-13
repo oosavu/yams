@@ -3,6 +3,7 @@ use yams_core::*;
 pub struct ModuleSine {
     ins: Vec<AudioPort>,
     outs: Vec<AudioPort>,
+    parameters: Vec<Parameter>,
     sample_clock: f32,
     framerate: f64,
 }
@@ -28,6 +29,10 @@ impl Module for ModuleSine {
 
     fn audio_driver(&self) -> Option<AudioDriverArc> {
         None
+    }
+
+    fn parameters(&mut self) -> &mut Vec<Parameter> {
+        &mut self.parameters
     }
 }
 
@@ -61,8 +66,9 @@ impl Default for ModuleSineFabric {
 impl Default for ModuleSine {
     fn default() -> Self {
         ModuleSine {
-            ins: AudioPort::create_audio_ports(1),
-            outs: AudioPort::create_audio_ports(1),
+            ins: AudioPort::create_audio_ports(["freq"].to_vec()),
+            outs: AudioPort::create_audio_ports(["out"].to_vec()),
+            parameters: vec![Parameter::new(ParameterType::F64(0.0), "freq")],
             sample_clock: 0.0,
             framerate: 0.0f64,
         }
