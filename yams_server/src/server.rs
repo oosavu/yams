@@ -1,14 +1,14 @@
+use steel::steel_vm::*;
 use yams_core::{Engine, ModulesRegistry};
 use yams_default_modules::create_registry;
-use steel::steel_vm::*;
 // use steel::SteelVal;
 
-pub struct Server{
+pub struct Server {
     engine: Engine,
     #[allow(unused)]
     registries: Vec<Box<dyn ModulesRegistry>>,
     #[allow(unused)]
-    steel_engine: engine::Engine
+    steel_engine: engine::Engine,
 }
 
 impl Server {

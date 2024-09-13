@@ -11,12 +11,12 @@ use std::process;
 use std::{error::Error, fs};
 
 use clap::Parser;
+use env_logger::Env;
 use log::{debug, error};
 use std::sync::{Arc, Mutex};
 use std::{thread, time::Duration};
 use yams_default_modules::*;
 use yams_server::*;
-use env_logger::Env;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -31,9 +31,7 @@ pub fn run(clap_args: Args) -> Result<(), Box<dyn Error>> {
 
     debug!("qwe clap_args: {clap_args:?}");
     match clap_args {
-        Args {
-            default_file: None,
-        } => {
+        Args { default_file: None } => {
             run_repl(vm)?;
             Ok(())
         }
@@ -55,11 +53,10 @@ pub fn run(clap_args: Args) -> Result<(), Box<dyn Error>> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    env_logger::Builder::from_env(Env::default().default_filter_or("yams_main=debug")).init();
-    let clap_args = Args::parse();
-    run(clap_args)?;
+    // env_logger::Builder::from_env(Env::default().default_filter_or("yams_main=debug")).init();
+    // let clap_args = Args::parse();
+    // run(clap_args)?;
     Ok(())
-
 
     // let clap_args = Args::parse();
     // steel_copy::run(clap_args)?;
@@ -67,7 +64,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     // let mut server = Server::default();
     // server.exec_script("sine");
 
-    // server
     // let mut e = Engine::default();
     //
     // #[allow(clippy::arc_with_non_send_sync)]

@@ -5,6 +5,7 @@ use std::sync::Arc;
 use yams_core::*;
 
 pub struct ModuleIO {
+    info: ModuleInfo,
     ins: AudioPortsCell,
     outs: AudioPortsCell,
     parameters: Vec<Parameter>,
@@ -32,10 +33,27 @@ impl Module for ModuleIO {
     fn parameters(&mut self) -> &mut Vec<Parameter> {
         return self.parameters.as_mut();
     }
+
+    fn info(&self) -> &ModuleInfo {
+        &self.info
+    }
 }
 
 pub struct ModuleIOFabric {
     info: ModuleInfo,
+}
+
+impl Default for ModuleIOFabric {
+    fn default() -> Self {
+        Self {
+            info: ModuleInfo {
+                name: "audio_io".to_string(),
+                inputs: PortInfo::create_vec("in", 8, 1),
+                outputs: PortInfo::create_vec("out", 8, 1),
+                parameters: vec![],
+            },
+        }
+    }
 }
 
 impl ModuleFabric for ModuleIOFabric {
@@ -44,56 +62,32 @@ impl ModuleFabric for ModuleIOFabric {
     }
 
     fn create(&self) -> ModuleArc {
-        Arc::new(Mutex::new(ModuleIO::default()))
-    }
-}
-
-impl Default for ModuleIOFabric {
-    fn default() -> Self {
-        ModuleIOFabric {
-            info: ModuleInfo {
-                name: "audio_io".to_string(),
-                inputs: vec![PortInfo { name: "in0".to_string(), channels: 1 },
-                             PortInfo { name: "in1".to_string(), channels: 1 },
-                             PortInfo { name: "in2".to_string(), channels: 1 },
-                             PortInfo { name: "in3".to_string(), channels: 1 },
-                             PortInfo { name: "in4".to_string(), channels: 1 },
-                             PortInfo { name: "in5".to_string(), channels: 1 },
-                             PortInfo { name: "in6".to_string(), channels: 1 },
-                             PortInfo { name: "in7".to_string(), channels: 1 },
-                ],
-                outputs: vec![PortInfo { name: "out0".to_string(), channels: 1 },
-                              PortInfo { name: "out1".to_string(), channels: 1 },
-                              PortInfo { name: "out2".to_string(), channels: 1 },
-                              PortInfo { name: "out3".to_string(), channels: 1 },
-                              PortInfo { name: "out4".to_string(), channels: 1 },
-                              PortInfo { name: "out5".to_string(), channels: 1 },
-                              PortInfo { name: "out6".to_string(), channels: 1 },
-                              PortInfo { name: "out7".to_string(), channels: 1 },
-                ],
-            },
-        }
-    }
-}
-
-impl Default for ModuleIO {
-    fn default() -> Self {
         #[allow(clippy::arc_with_non_send_sync)]
-            let ins_ports = Arc::new(UnsafeCell::new(AudioPort::create_n_audio_ports(8, "input")));
+        let ins_ports = Arc::new(UnsafeCell::new(AudioPort::create(&self.info.inputs)));
         #[allow(clippy::arc_with_non_send_sync)]
-            let outs_ports = Arc::new(UnsafeCell::new(AudioPort::create_n_audio_ports(8, "output")));
+        let outs_ports = Arc::new(UnsafeCell::new(AudioPort::create(&self.info.outputs)));
 
         let mut res = ModuleIO {
+            info: self.info.clone(),
             ins: ins_ports,
             outs: outs_ports,
+            parameters: Parameter::create(&self.info.parameters),
             framerate: 0.0f64,
             cpal_instance: None,
-            parameters: vec![],
         };
+
         res.cpal_instance = Some(CPALAudioDriver::create(
             UnsafeAudioPorts(res.outs.get()),
             UnsafeAudioPorts(res.ins.get()),
         ));
-        res
+
+        Arc::new(Mutex::new(ModuleIO {
+            info: self.info.clone(),
+            ins: Arc::new(UnsafeCell::new(AudioPort::create(&self.info.inputs))),
+            outs: Arc::new(UnsafeCell::new(AudioPort::create(&self.info.outputs))),
+            parameters: Parameter::create(&self.info.parameters),
+            framerate: 0.0,
+            cpal_instance: None,
+        }))
     }
 }

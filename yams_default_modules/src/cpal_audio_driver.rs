@@ -8,7 +8,8 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::StreamError;
 use ringbuf::{
     traits::{Consumer, Producer, Split},
-    HeapRb};
+    HeapRb,
+};
 use std::sync::{Arc, Mutex};
 use yams_core::RealTimeCoreArc;
 

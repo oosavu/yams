@@ -1,3 +1,5 @@
+use crate::ParameterType;
+use crate::{ParameterInfo, ParameterInfoVec, PortInfoVec};
 use std::cell::UnsafeCell;
 use std::sync::Arc;
 use std::vec::Vec;
@@ -12,23 +14,15 @@ pub struct AudioPort {
 }
 
 impl AudioPort {
-    pub fn new(name: &str) -> Self {
-        AudioPort {
-            value: [0.0; CHANELS],
-            count: 1,
-            name: name.to_string(),
-        }
-    }
-
-    pub fn create_audio_ports(names: Vec<&str>) -> Vec<AudioPort> {
-        let res: Vec<AudioPort> = names.into_iter().map(|name| AudioPort::new(name)).collect();
-        res
-    }
-
-    pub fn create_n_audio_ports(n: usize, name: &str) -> Vec<AudioPort> {
-        let digits: Vec<usize> = (0..n).into_iter().collect();
-        let res = digits.into_iter().map(|n| AudioPort::new(
-            format!("{name}_{n}").as_str())).collect();
+    pub fn create(infos: &PortInfoVec) -> Vec<Self> {
+        let res: Vec<Self> = infos
+            .into_iter()
+            .map(|info| Self {
+                value: [0.0; CHANELS],
+                count: info.channels as usize,
+                name: info.name.to_string(),
+            })
+            .collect();
         res
     }
 }
@@ -43,26 +37,27 @@ unsafe impl Send for UnsafeAudioPorts {}
 
 unsafe impl Sync for UnsafeAudioPorts {}
 
-
-pub enum ParameterType {
-    F64(f64),
-    Bool(bool),
-    String(String),
-    I64(i64),
-}
-
 pub struct Parameter {
     pub value: ParameterType,
-    pub name: String,
-    // todo add moar stuff
+    pub info: ParameterInfo,
 }
 
-
 impl Parameter {
-    pub fn new(parameter_type: ParameterType, name: &str) -> Self {
+    pub fn new(parameter_type: ParameterType, info: &ParameterInfo) -> Self {
         Parameter {
             value: parameter_type,
-            name: name.to_string(),
+            info: info.clone(),
         }
+    }
+
+    pub fn create(infos: &ParameterInfoVec) -> Vec<Self> {
+        let res: Vec<Self> = infos
+            .into_iter()
+            .map(|info| Parameter {
+                value: info.parameter_type.clone(),
+                info: info.clone(),
+            })
+            .collect();
+        res
     }
 }

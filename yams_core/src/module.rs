@@ -1,6 +1,6 @@
 use crate::synth_core::RealTimeCoreArc;
-use crate::{AudioPort, Parameter};
 use crate::ModuleInfo;
+use crate::{AudioPort, Parameter};
 use std::ptr::NonNull;
 use std::sync::{Arc, Mutex};
 
@@ -17,6 +17,7 @@ pub trait AudioDriver {
 pub type AudioDriverArc = Arc<Mutex<dyn AudioDriver>>;
 
 pub trait Module {
+    fn info(&self) -> &ModuleInfo;
     fn set_framerate(&mut self, framerate: f64);
     fn process(&mut self);
     fn inputs(&mut self) -> &mut Vec<AudioPort>;
@@ -33,9 +34,4 @@ pub fn extract_pointer(module: &ModuleArc) -> ModulePointer {
         let qwe: *mut dyn Module = &mut *asd.lock().unwrap() as *mut dyn Module;
         Some(NonNull::new_unchecked(qwe))
     };
-}
-
-pub trait ModuleFabric{
-    fn info(&self) -> &ModuleInfo;
-    fn create(&self) -> ModuleArc;
 }

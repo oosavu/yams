@@ -1,3 +1,6 @@
+use crate::audio_io::ModuleIO;
+use crate::cpal_audio_driver::CPALAudioDriver;
+use std::cell::UnsafeCell;
 use yams_core::*;
 
 pub struct ModuleSine {
@@ -6,9 +9,13 @@ pub struct ModuleSine {
     parameters: Vec<Parameter>,
     sample_clock: f32,
     framerate: f64,
+    info: ModuleInfo,
 }
 
 impl Module for ModuleSine {
+    fn info(&self) -> &ModuleInfo {
+        &self.info
+    }
     fn set_framerate(&mut self, framerate: f64) {
         self.framerate = framerate;
     }
@@ -27,12 +34,12 @@ impl Module for ModuleSine {
         &mut self.outs
     }
 
-    fn audio_driver(&self) -> Option<AudioDriverArc> {
-        None
-    }
-
     fn parameters(&mut self) -> &mut Vec<Parameter> {
         &mut self.parameters
+    }
+
+    fn audio_driver(&self) -> Option<AudioDriverArc> {
+        None
     }
 }
 
@@ -40,37 +47,41 @@ pub struct ModuleSineFabric {
     info: ModuleInfo,
 }
 
-impl ModuleFabric for ModuleSineFabric {
-    fn create(&self) -> ModuleArc {
-        Arc::new(Mutex::new(ModuleSine::default()))
-    }
-    fn info(&self) -> &ModuleInfo {
-        &self.info
-    }
-}
-
 impl Default for ModuleSineFabric {
     fn default() -> Self {
-        ModuleSineFabric {
+        Self {
             info: ModuleInfo {
                 name: "sine".to_string(),
-                inputs: vec![PortInfo { name: "freq".to_string(), channels: 1 },
-                ],
-                outputs: vec![PortInfo { name: "out".to_string(), channels: 1 },
-                ],
+                inputs: vec![PortInfo {
+                    name: "freq".to_string(),
+                    channels: 1,
+                }],
+                outputs: vec![PortInfo {
+                    name: "out".to_string(),
+                    channels: 1,
+                }],
+                parameters: vec![ParameterInfo {
+                    name: "freq".to_string(),
+                    parameter_type: ParameterType::F64(0.0),
+                }],
             },
         }
     }
 }
 
-impl Default for ModuleSine {
-    fn default() -> Self {
-        ModuleSine {
-            ins: AudioPort::create_audio_ports(["freq"].to_vec()),
-            outs: AudioPort::create_audio_ports(["out"].to_vec()),
-            parameters: vec![Parameter::new(ParameterType::F64(0.0), "freq")],
+impl ModuleFabric for ModuleSineFabric {
+    fn info(&self) -> &ModuleInfo {
+        &self.info
+    }
+
+    fn create(&self) -> ModuleArc {
+        Arc::new(Mutex::new(ModuleSine {
+            info: self.info.clone(),
+            ins: AudioPort::create(&self.info.inputs),
+            outs: AudioPort::create(&self.info.outputs),
+            parameters: Parameter::create(&self.info.parameters),
+            framerate: 0.0,
             sample_clock: 0.0,
-            framerate: 0.0f64,
-        }
+        }))
     }
 }

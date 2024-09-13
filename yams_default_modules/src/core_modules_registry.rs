@@ -18,8 +18,14 @@ impl ModulesRegistry for CoresRegistry {
 pub fn create_registry() -> CoresRegistry {
     CoresRegistry {
         fabrics: HashMap::from([
-            ("sine".to_string(), Box::new(ModuleSineFabric::default()) as Box<dyn ModuleFabric>),
-            ("audio_io".to_string(), Box::new(ModuleIOFabric::default()) as Box<dyn ModuleFabric>),
-        ])
+            (
+                "sine".to_string(),
+                Box::new(ModuleSineFabric::default()) as Box<dyn ModuleFabric>,
+            ),
+            (
+                "audio_io".to_string(),
+                Box::new(ModuleIOFabric::default()) as Box<dyn ModuleFabric>,
+            ),
+        ]),
     }
 }
