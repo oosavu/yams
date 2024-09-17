@@ -1,0 +1,10 @@
+[package]
+name = "tester"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+steel-core ={ git = "https://github.com/mattwparas/steel" }
+steel-derive = { git = "https://github.com/mattwparas/steel" }
+steel-repl ={ git = "https://github.com/mattwparas/steel" }
+steel-doc ={ git = "https://github.com/mattwparas/steel" }

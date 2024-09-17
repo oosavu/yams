@@ -4,5 +4,5 @@ members = [
     "yams_main",
     "yams_core",
     "yams_default_modules",
-    "yams_server",
+    "yams_server", "tester",
 ]

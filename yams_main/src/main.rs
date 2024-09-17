@@ -53,6 +53,7 @@ pub fn run(clap_args: Args) -> Result<(), Box<dyn Error>> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+
     // env_logger::Builder::from_env(Env::default().default_filter_or("yams_main=debug")).init();
     // let clap_args = Args::parse();
     // run(clap_args)?;
